@@ -335,10 +335,13 @@ const Category = () => {
         </div>
       ) : (
         <div className="snap-y-mandatory overflow-y-auto no-scrollbar h-[calc(100vh-3.5rem-4rem-9rem)]">
-          {videos.map((v) => (
-            <VideoCard key={v.id} video={v} />
+          {videos.map((v, i) => (
+            <VideoCard key={v.id} video={v} onOpen={() => setViewerStart(i)} />
           ))}
         </div>
+      )}
+      {viewerStart !== null && (
+        <ShortsViewer videos={videos} startIndex={viewerStart} onClose={() => setViewerStart(null)} />
       )}
     </AppShell>
   );
