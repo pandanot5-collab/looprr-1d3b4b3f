@@ -210,6 +210,30 @@ export type Database = {
           },
         ]
       }
+      video_reports: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string | null
+          user_id: string
+          video_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id: string
+          video_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id?: string
+          video_id?: string
+        }
+        Relationships: []
+      }
       videos: {
         Row: {
           boost_count: number
@@ -217,10 +241,12 @@ export type Database = {
           created_at: string
           dislike_count: number
           external_id: string | null
+          flagged: boolean
           id: string
           like_count: number
           platform: Database["public"]["Enums"]["video_platform"]
           posted_by: string
+          report_count: number
           thumbnail_url: string | null
           title: string | null
           url: string
@@ -231,10 +257,12 @@ export type Database = {
           created_at?: string
           dislike_count?: number
           external_id?: string | null
+          flagged?: boolean
           id?: string
           like_count?: number
           platform: Database["public"]["Enums"]["video_platform"]
           posted_by: string
+          report_count?: number
           thumbnail_url?: string | null
           title?: string | null
           url: string
@@ -245,10 +273,12 @@ export type Database = {
           created_at?: string
           dislike_count?: number
           external_id?: string | null
+          flagged?: boolean
           id?: string
           like_count?: number
           platform?: Database["public"]["Enums"]["video_platform"]
           posted_by?: string
+          report_count?: number
           thumbnail_url?: string | null
           title?: string | null
           url?: string
@@ -279,6 +309,7 @@ export type Database = {
         Args: { _category_id: string; _user_id: string }
         Returns: boolean
       }
+      required_reports_for: { Args: { _likes: number }; Returns: number }
     }
     Enums: {
       reaction_type: "like" | "dislike"

@@ -1,0 +1,350 @@
+import { useEffect, useRef, useState } from "react";
+import { Heart, ThumbsDown, Zap, Flag, X, ExternalLink, AlertTriangle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Avatar } from "@/components/AppShell";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import type { FeedVideo } from "@/components/VideoCard";
+
+interface Props {
+  videos: FeedVideo[];
+  startIndex: number;
+  onClose: () => void;
+}
+
+interface Counts {
+  like: number;
+  dislike: number;
+  boost: number;
+  reports: number;
+  flagged: boolean;
+}
+
+export const ShortsViewer = ({ videos, startIndex, onClose }: Props) => {
+  const { user } = useAuth();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(startIndex);
+
+  // Per-video state keyed by id
+  const [counts, setCounts] = useState<Record<string, Counts>>(() =>
+    Object.fromEntries(
+      videos.map((v) => [
+        v.id,
+        {
+          like: v.like_count,
+          dislike: v.dislike_count,
+          boost: v.boost_count,
+          reports: (v as any).report_count ?? 0,
+          flagged: (v as any).flagged ?? false,
+        },
+      ]),
+    ),
+  );
+  const [reactions, setReactions] = useState<Record<string, "like" | "dislike" | null>>({});
+  const [boosted, setBoosted] = useState<Record<string, boolean>>({});
+  const [reported, setReported] = useState<Record<string, boolean>>({});
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportTarget, setReportTarget] = useState<string | null>(null);
+
+  // Scroll to start index on mount
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const child = el.children[startIndex] as HTMLElement | undefined;
+    if (child) el.scrollTo({ top: child.offsetTop, behavior: "instant" as ScrollBehavior });
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [startIndex]);
+
+  // Track active index via scroll
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const i = Math.round(el.scrollTop / el.clientHeight);
+      setActiveIndex(i);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Load reactions/boosts/reports for user
+  useEffect(() => {
+    if (!user) return;
+    const ids = videos.map((v) => v.id);
+    if (ids.length === 0) return;
+    (async () => {
+      const [{ data: rxn }, { data: bst }, { data: rpt }] = await Promise.all([
+        supabase.from("video_reactions").select("video_id, reaction").eq("user_id", user.id).in("video_id", ids),
+        supabase
+          .from("video_boosts")
+          .select("video_id")
+          .eq("user_id", user.id)
+          .eq("boosted_on", new Date().toISOString().slice(0, 10))
+          .in("video_id", ids),
+        supabase.from("video_reports").select("video_id").eq("user_id", user.id).in("video_id", ids),
+      ]);
+      setReactions(Object.fromEntries((rxn ?? []).map((r: any) => [r.video_id, r.reaction])));
+      setBoosted(Object.fromEntries((bst ?? []).map((b: any) => [b.video_id, true])));
+      setReported(Object.fromEntries((rpt ?? []).map((r: any) => [r.video_id, true])));
+    })();
+  }, [user, videos]);
+
+  // Esc to close
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const requireAuth = () => {
+    if (!user) {
+      toast("Sign in to interact");
+      return false;
+    }
+    return true;
+  };
+
+  const handleReact = async (videoId: string, type: "like" | "dislike") => {
+    if (!requireAuth() || !user) return;
+    const current = reactions[videoId] ?? null;
+    if (current === type) {
+      await supabase.from("video_reactions").delete().eq("video_id", videoId).eq("user_id", user.id);
+      setCounts((c) => ({ ...c, [videoId]: { ...c[videoId], [type]: Math.max(0, c[videoId][type] - 1) } }));
+      setReactions((r) => ({ ...r, [videoId]: null }));
+    } else if (current) {
+      await supabase
+        .from("video_reactions")
+        .update({ reaction: type })
+        .eq("video_id", videoId)
+        .eq("user_id", user.id);
+      setCounts((c) => ({
+        ...c,
+        [videoId]: {
+          ...c[videoId],
+          [type]: c[videoId][type] + 1,
+          [current]: Math.max(0, c[videoId][current] - 1),
+        },
+      }));
+      setReactions((r) => ({ ...r, [videoId]: type }));
+    } else {
+      await supabase.from("video_reactions").insert({ video_id: videoId, user_id: user.id, reaction: type });
+      setCounts((c) => ({ ...c, [videoId]: { ...c[videoId], [type]: c[videoId][type] + 1 } }));
+      setReactions((r) => ({ ...r, [videoId]: type }));
+    }
+  };
+
+  const handleBoost = async (videoId: string) => {
+    if (!requireAuth() || !user) return;
+    if (boosted[videoId]) {
+      toast("Already boosted today");
+      return;
+    }
+    const { error } = await supabase.from("video_boosts").insert({ video_id: videoId, user_id: user.id });
+    if (error) {
+      if (error.code === "23505") toast("You've already boosted a video today");
+      else toast("Could not boost", { description: error.message });
+      return;
+    }
+    setBoosted((b) => ({ ...b, [videoId]: true }));
+    setCounts((c) => ({ ...c, [videoId]: { ...c[videoId], boost: c[videoId].boost + 1 } }));
+    toast("Boosted ⚡");
+  };
+
+  const openReport = (videoId: string) => {
+    if (!requireAuth()) return;
+    if (reported[videoId]) {
+      toast("You've already reported this video");
+      return;
+    }
+    setReportTarget(videoId);
+    setReportReason("");
+    setReportOpen(true);
+  };
+
+  const submitReport = async () => {
+    if (!user || !reportTarget) return;
+    const { error } = await supabase
+      .from("video_reports")
+      .insert({ video_id: reportTarget, user_id: user.id, reason: reportReason.trim() || null });
+    if (error) {
+      if (error.code === "23505") toast("Already reported");
+      else toast("Could not report", { description: error.message });
+      return;
+    }
+    setReported((r) => ({ ...r, [reportTarget]: true }));
+    setCounts((c) => ({
+      ...c,
+      [reportTarget]: { ...c[reportTarget], reports: c[reportTarget].reports + 1 },
+    }));
+    setReportOpen(false);
+    toast("Report submitted");
+  };
+
+  const requiredReports = (likes: number) => Math.max(3, 3 + Math.floor(likes / 10));
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black">
+      <button
+        onClick={onClose}
+        aria-label="Close"
+        className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
+      <div
+        ref={containerRef}
+        className="h-full w-full overflow-y-auto snap-y snap-mandatory no-scrollbar"
+      >
+        {videos.map((v, idx) => {
+          const c = counts[v.id];
+          const r = reactions[v.id] ?? null;
+          const b = !!boosted[v.id];
+          const rep = !!reported[v.id];
+          const required = requiredReports(c.like);
+          const isActive = idx === activeIndex;
+          return (
+            <section
+              key={v.id}
+              className="snap-start h-full w-full relative flex items-center justify-center"
+            >
+              {/* Player */}
+              <div className="relative w-full h-full max-w-[500px] mx-auto">
+                {v.platform === "youtube_shorts" && v.external_id ? (
+                  <iframe
+                    key={isActive ? `${v.id}-active` : v.id}
+                    src={`https://www.youtube.com/embed/${v.external_id}?rel=0&modestbranding=1&playsinline=1&autoplay=${isActive ? 1 : 0}&mute=${isActive ? 0 : 1}`}
+                    title={v.title ?? "Short video"}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <a
+                    href={v.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full h-full flex flex-col items-center justify-center text-white gap-3 bg-gradient-to-br from-zinc-900 to-black relative"
+                  >
+                    {v.thumbnail_url && (
+                      <img src={v.thumbnail_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                    )}
+                    <div className="relative z-10 flex flex-col items-center gap-2">
+                      <ExternalLink className="w-10 h-10" />
+                      <span className="text-sm font-medium">Open on TikTok</span>
+                    </div>
+                  </a>
+                )}
+
+                {/* Bottom overlay: meta */}
+                <div className="absolute left-0 right-0 bottom-0 p-4 pr-20 bg-gradient-to-t from-black/90 via-black/50 to-transparent text-white pointer-events-none">
+                  <div className="pointer-events-auto flex flex-col gap-2">
+                    <Link to={`/u/${v.profiles?.username}`} className="flex items-center gap-2 w-fit">
+                      <Avatar username={v.profiles?.username ?? "?"} url={v.profiles?.avatar_url} size={32} />
+                      <span className="text-sm font-semibold">@{v.profiles?.username}</span>
+                    </Link>
+                    {v.categories && (
+                      <Link to={`/c/${v.categories.slug}`} className="text-xs text-white/80 w-fit">
+                        #{v.categories.name}
+                      </Link>
+                    )}
+                    {v.title && <p className="text-sm leading-snug line-clamp-2">{v.title}</p>}
+                    {c.flagged && (
+                      <div className="flex items-center gap-1.5 text-xs text-yellow-400">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        <span>Flagged by community</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right side action rail */}
+                <div className="absolute right-2 bottom-24 flex flex-col items-center gap-4 text-white">
+                  <RailButton
+                    icon={<Heart className={cn("w-7 h-7", r === "like" && "fill-current text-red-500")} />}
+                    label={c.like}
+                    onClick={() => handleReact(v.id, "like")}
+                  />
+                  <RailButton
+                    icon={<ThumbsDown className={cn("w-7 h-7", r === "dislike" && "fill-current")} />}
+                    label={c.dislike}
+                    onClick={() => handleReact(v.id, "dislike")}
+                  />
+                  <RailButton
+                    icon={<Zap className={cn("w-7 h-7", b && "fill-current text-yellow-400")} />}
+                    label={c.boost}
+                    onClick={() => handleBoost(v.id)}
+                  />
+                  <RailButton
+                    icon={<Flag className={cn("w-6 h-6", rep && "fill-current text-orange-400")} />}
+                    label={`${c.reports}/${required}`}
+                    onClick={() => openReport(v.id)}
+                    small
+                  />
+                </div>
+              </div>
+            </section>
+          );
+        })}
+      </div>
+
+      <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report video</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Tell us what's wrong. Popular videos require more reports before being flagged.
+          </p>
+          <Textarea
+            value={reportReason}
+            onChange={(e) => setReportReason(e.target.value)}
+            placeholder="Reason (optional)"
+            rows={4}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReportOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={submitReport}>Submit report</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+const RailButton = ({
+  icon,
+  label,
+  onClick,
+  small,
+}: {
+  icon: React.ReactNode;
+  label: number | string;
+  onClick: () => void;
+  small?: boolean;
+}) => (
+  <button
+    onClick={onClick}
+    className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
+  >
+    <span className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center hover:bg-black/60 transition-colors">
+      {icon}
+    </span>
+    <span className={cn("font-mono tabular-nums drop-shadow", small ? "text-[10px]" : "text-xs")}>
+      {label}
+    </span>
+  </button>
+);

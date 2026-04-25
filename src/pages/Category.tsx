@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppShell, Avatar } from "@/components/AppShell";
 import { VideoCard, FeedVideo } from "@/components/VideoCard";
+import { ShortsViewer } from "@/components/ShortsViewer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -36,6 +37,7 @@ const Category = () => {
   const [collabUsername, setCollabUsername] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [viewerStart, setViewerStart] = useState<number | null>(null);
 
   const isOwner = user && category && user.id === category.owner_id;
 
@@ -54,7 +56,7 @@ const Category = () => {
       const { data: vids } = await supabase
         .from("videos")
         .select(
-          "id, url, platform, external_id, title, thumbnail_url, like_count, dislike_count, boost_count, created_at, posted_by, category_id, profiles!videos_posted_by_fkey(username, avatar_url), categories(name, slug)",
+          "id, url, platform, external_id, title, thumbnail_url, like_count, dislike_count, boost_count, report_count, flagged, created_at, posted_by, category_id, profiles!videos_posted_by_fkey(username, avatar_url), categories(name, slug)",
         )
         .eq("category_id", cat.id)
         .order("boost_count", { ascending: false })
@@ -333,10 +335,13 @@ const Category = () => {
         </div>
       ) : (
         <div className="snap-y-mandatory overflow-y-auto no-scrollbar h-[calc(100vh-3.5rem-4rem-9rem)]">
-          {videos.map((v) => (
-            <VideoCard key={v.id} video={v} />
+          {videos.map((v, i) => (
+            <VideoCard key={v.id} video={v} onOpen={() => setViewerStart(i)} />
           ))}
         </div>
+      )}
+      {viewerStart !== null && (
+        <ShortsViewer videos={videos} startIndex={viewerStart} onClose={() => setViewerStart(null)} />
       )}
     </AppShell>
   );
