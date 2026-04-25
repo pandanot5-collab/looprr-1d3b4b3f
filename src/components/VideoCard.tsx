@@ -111,7 +111,7 @@ export const VideoCard = ({ video, onMutate, onOpen }: { video: FeedVideo; onMut
     <article className="snap-start-always min-h-[calc(100vh-8.5rem)] flex flex-col py-3 px-3">
       <div className="surface-elevated border border-border rounded-2xl overflow-hidden flex flex-col flex-1">
         {/* Video player */}
-        <div className="relative bg-black aspect-[9/16] w-full max-h-[70vh]">
+        <div className="relative bg-black aspect-[9/16] w-full max-h-[70vh] group">
           {video.platform === "youtube_shorts" && video.external_id ? (
             <iframe
               src={`https://www.youtube.com/embed/${video.external_id}?rel=0&modestbranding=1&playsinline=1`}
@@ -136,6 +136,15 @@ export const VideoCard = ({ video, onMutate, onOpen }: { video: FeedVideo; onMut
                 <span className="text-sm font-medium">Open on TikTok</span>
               </div>
             </a>
+          )}
+          {onOpen && (
+            <button
+              onClick={onOpen}
+              aria-label="Open fullscreen"
+              className="absolute top-2 right-2 z-10 px-3 h-8 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-medium hover:bg-black/80 transition-colors"
+            >
+              Fullscreen
+            </button>
           )}
         </div>
 
