@@ -23,6 +23,7 @@ const tiers: Tier[] = [
     price: 2,
     tagline: "Dip your toes into Pro.",
     features: [
+      "Create up to 3 categories (vs 1 free)",
       "1 vote to remove videos per week",
       "2 daily boosts (vs 1 free)",
       "Ad-free feed",
@@ -35,6 +36,7 @@ const tiers: Tier[] = [
     price: 4,
     tagline: "For active curators.",
     features: [
+      "Create up to 10 categories",
       "Unlimited remove-video votes",
       "Unlimited daily boosts",
       "Pro badge on your profile",
@@ -50,6 +52,7 @@ const tiers: Tier[] = [
     tagline: "Full power, zero limits.",
     features: [
       "Everything in Pro",
+      "Unlimited categories",
       "Elite gold badge",
       "2x voting weight on removals",
       "Early access to new features",
