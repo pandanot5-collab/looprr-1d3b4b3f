@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Compass, Plus, Search, User, Sun, Moon } from "lucide-react";
+import { Compass, Plus, Search, User, Sun, Moon, Crown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import logo from "@/assets/loopr-logo.png";
@@ -14,6 +14,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
     { to: "/", icon: Compass, label: "Feed" },
     { to: "/browse", icon: Search, label: "Browse" },
     { to: "/post", icon: Plus, label: "Post" },
+    { to: "/subscribe", icon: Crown, label: "Pro" },
     { to: user ? "/profile" : "/auth", icon: User, label: user ? "Profile" : "Sign in" },
   ];
 
@@ -55,18 +56,21 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
           {navItems.map((item) => {
             const active = location.pathname === item.to;
             const isPost = item.label === "Post";
+            const isPro = item.label === "Pro";
             return (
               <Link
                 key={item.label}
                 to={item.to}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 w-16 h-12 rounded-xl transition-all",
+                  "flex flex-col items-center justify-center gap-0.5 w-14 h-12 rounded-xl transition-all",
                   isPost && "bg-foreground text-background hover:opacity-90",
-                  !isPost && active && "text-foreground",
-                  !isPost && !active && "text-muted-foreground hover:text-foreground"
+                  isPro && active && "text-accent",
+                  isPro && !active && "text-muted-foreground hover:text-accent",
+                  !isPost && !isPro && active && "text-foreground",
+                  !isPost && !isPro && !active && "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <item.icon className={cn("w-5 h-5", isPost && "stroke-[2.5]")} />
+                <item.icon className={cn("w-5 h-5", isPost && "stroke-[2.5]", isPro && "fill-current stroke-[1.5]")} />
                 <span className="text-[10px] font-medium tracking-wide">{item.label}</span>
               </Link>
             );
