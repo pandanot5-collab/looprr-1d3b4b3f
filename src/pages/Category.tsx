@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppShell, Avatar } from "@/components/AppShell";
 import { VideoCard, FeedVideo } from "@/components/VideoCard";
+import { ShortsViewer } from "@/components/ShortsViewer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
