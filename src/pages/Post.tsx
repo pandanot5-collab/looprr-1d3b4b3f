@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { parseVideoUrl, slugify } from "@/lib/video-utils";
-import { Loader2, Link2, Sparkles } from "lucide-react";
+import { Loader2, Link2, Sparkles, Search, Lock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const urlSchema = z.string().url("Enter a valid URL");
 const titleSchema = z.string().max(140).optional();
@@ -18,14 +19,30 @@ const categoryNameSchema = z
   .min(2, "At least 2 characters")
   .max(30, "Max 30 characters");
 
+interface CategoryOpt {
+  id: string;
+  name: string;
+  slug: string;
+  owner_id: string;
+  locked: boolean;
+}
+
 const Post = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [myCategory, setMyCategory] = useState<{ id: string; name: string; slug: string } | null>(null);
+  const [params] = useSearchParams();
+  const presetCategory = params.get("category");
+
+  const [myCategory, setMyCategory] = useState<CategoryOpt | null>(null);
+  const [allCategories, setAllCategories] = useState<CategoryOpt[]>([]);
+  const [collabIds, setCollabIds] = useState<Set<string>>(new Set());
+  const [selectedCat, setSelectedCat] = useState<CategoryOpt | null>(null);
+  const [search, setSearch] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+
   const [checking, setChecking] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // form state
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [categoryName, setCategoryName] = useState("");
@@ -37,16 +54,38 @@ const Post = () => {
       navigate("/auth");
       return;
     }
-    supabase
-      .from("categories")
-      .select("id, name, slug")
-      .eq("owner_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        setMyCategory(data);
-        setChecking(false);
-      });
-  }, [user, authLoading, navigate]);
+    const load = async () => {
+      const [{ data: cats }, { data: collabs }] = await Promise.all([
+        supabase
+          .from("categories")
+          .select("id, name, slug, owner_id, locked")
+          .order("created_at", { ascending: false }),
+        supabase.from("category_collaborators").select("category_id").eq("user_id", user.id),
+      ]);
+      const allCats = (cats as CategoryOpt[]) ?? [];
+      setAllCategories(allCats);
+      const mine = allCats.find((c) => c.owner_id === user.id) ?? null;
+      setMyCategory(mine);
+      const collabSet = new Set((collabs ?? []).map((c) => c.category_id));
+      setCollabIds(collabSet);
+
+      if (presetCategory) {
+        const found = allCats.find((c) => c.slug === presetCategory);
+        if (found && canPost(found, user.id, mine, collabSet)) setSelectedCat(found);
+      } else if (mine) {
+        setSelectedCat(mine);
+      }
+      setChecking(false);
+    };
+    load();
+  }, [user, authLoading, navigate, presetCategory]);
+
+  const canPost = (
+    c: CategoryOpt,
+    uid: string,
+    mine: CategoryOpt | null,
+    collabSet: Set<string>,
+  ) => c.owner_id === uid || !c.locked || collabSet.has(c.id);
 
   const handleCreateCategory = async () => {
     if (!user) return;
@@ -65,7 +104,7 @@ const Post = () => {
         slug,
         description: categoryDesc.trim() || null,
       })
-      .select("id, name, slug")
+      .select("id, name, slug, owner_id, locked")
       .single();
     setSubmitting(false);
     if (error) {
@@ -73,12 +112,16 @@ const Post = () => {
       else toast("Could not create category", { description: error.message });
       return;
     }
-    setMyCategory(data);
+    const newCat = data as CategoryOpt;
+    setMyCategory(newCat);
+    setAllCategories((prev) => [newCat, ...prev]);
+    setSelectedCat(newCat);
+    setShowCreate(false);
     toast("Category created");
   };
 
   const handlePost = async () => {
-    if (!user || !myCategory) return;
+    if (!user || !selectedCat) return;
     const urlResult = urlSchema.safeParse(url);
     if (!urlResult.success) {
       toast(urlResult.error.issues[0].message);
@@ -97,7 +140,7 @@ const Post = () => {
     setSubmitting(true);
     const { error } = await supabase.from("videos").insert({
       posted_by: user.id,
-      category_id: myCategory.id,
+      category_id: selectedCat.id,
       url: url.trim(),
       platform: parsed.platform,
       external_id: parsed.externalId,
@@ -112,7 +155,7 @@ const Post = () => {
     toast("Posted!");
     setUrl("");
     setTitle("");
-    navigate("/");
+    navigate(`/c/${selectedCat.slug}`);
   };
 
   if (authLoading || checking) {
@@ -125,6 +168,13 @@ const Post = () => {
     );
   }
 
+  const postable = user
+    ? allCategories.filter((c) => canPost(c, user.id, myCategory, collabIds))
+    : [];
+  const filtered = postable.filter((c) =>
+    c.name.toLowerCase().includes(search.toLowerCase()),
+  );
+
   return (
     <AppShell>
       <div className="px-4 py-6 max-w-md mx-auto flex flex-col gap-6">
@@ -135,22 +185,22 @@ const Post = () => {
           </p>
         </div>
 
-        {!myCategory ? (
+        {showCreate ? (
           <div className="surface-elevated border border-border rounded-2xl p-5 flex flex-col gap-4">
             <div className="flex items-start gap-3">
               <div className="w-9 h-9 rounded-full bg-foreground text-background flex items-center justify-center shrink-0">
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="font-semibold">Create your category first</h2>
+                <h2 className="font-semibold">Create your category</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Each user gets one unique category. Make it count.
+                  Each user gets one category they own.
                 </p>
               </div>
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Category name
+                Name
               </label>
               <Input
                 value={categoryName}
@@ -172,19 +222,68 @@ const Post = () => {
                 rows={2}
               />
             </div>
-            <Button onClick={handleCreateCategory} disabled={submitting} className="h-11">
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create category"}
-            </Button>
+            <div className="flex gap-2">
+              {myCategory === null && (
+                <Button variant="outline" onClick={() => setShowCreate(false)} className="flex-1">
+                  Cancel
+                </Button>
+              )}
+              <Button onClick={handleCreateCategory} disabled={submitting} className="flex-1 h-11">
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create"}
+              </Button>
+            </div>
           </div>
         ) : (
           <>
-            <div className="surface-subtle border border-border rounded-2xl p-4 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-                  Posting to
-                </span>
-                <p className="text-base font-semibold">#{myCategory.name}</p>
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Choose a category
+              </label>
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search categories..."
+                  className="pl-10 h-11"
+                />
               </div>
+              <div className="max-h-48 overflow-y-auto flex flex-col gap-1.5 border border-border rounded-xl p-2">
+                {filtered.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">
+                    No categories. Create one below.
+                  </p>
+                ) : (
+                  filtered.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => setSelectedCat(c)}
+                      className={cn(
+                        "text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-between",
+                        selectedCat?.id === c.id
+                          ? "bg-foreground text-background"
+                          : "hover:bg-muted",
+                      )}
+                    >
+                      <span>#{c.name}</span>
+                      <div className="flex items-center gap-1.5">
+                        {c.owner_id === user!.id && (
+                          <span className="text-[9px] font-mono uppercase opacity-70">yours</span>
+                        )}
+                        {c.locked && <Lock className="w-3 h-3 opacity-70" />}
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+              {!myCategory && (
+                <button
+                  onClick={() => setShowCreate(true)}
+                  className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
+                >
+                  + Create your own category
+                </button>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -215,8 +314,18 @@ const Post = () => {
               />
             </div>
 
-            <Button onClick={handlePost} disabled={submitting} className="h-12 text-base">
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Post video"}
+            <Button
+              onClick={handlePost}
+              disabled={submitting || !selectedCat}
+              className="h-12 text-base"
+            >
+              {submitting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : selectedCat ? (
+                `Post to #${selectedCat.name}`
+              ) : (
+                "Pick a category"
+              )}
             </Button>
           </>
         )}
