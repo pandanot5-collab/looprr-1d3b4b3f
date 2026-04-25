@@ -203,9 +203,11 @@ const Post = () => {
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="font-semibold">Create your category</h2>
+                <h2 className="font-semibold">Create a category</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Each user gets one category they own.
+                  {categoryLimit === Infinity
+                    ? `Elite plan · unlimited categories (you own ${ownedCount})`
+                    : `${tier.charAt(0).toUpperCase() + tier.slice(1)} plan · ${ownedCount} of ${categoryLimit} used`}
                 </p>
               </div>
             </div>
@@ -234,12 +236,14 @@ const Post = () => {
               />
             </div>
             <div className="flex gap-2">
-              {myCategory === null && (
-                <Button variant="outline" onClick={() => setShowCreate(false)} className="flex-1">
-                  Cancel
-                </Button>
-              )}
-              <Button onClick={handleCreateCategory} disabled={submitting} className="flex-1 h-11">
+              <Button variant="outline" onClick={() => setShowCreate(false)} className="flex-1">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateCategory}
+                disabled={submitting || !canCreateMore}
+                className="flex-1 h-11"
+              >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create"}
               </Button>
             </div>
