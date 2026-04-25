@@ -59,11 +59,13 @@ export const ShortsViewer = ({ videos, startIndex = 0, onClose, inline = false }
     if (!el) return;
     const child = el.children[startIndex] as HTMLElement | undefined;
     if (child) el.scrollTo({ top: child.offsetTop, behavior: "instant" as ScrollBehavior });
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [startIndex]);
+    if (!inline) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [startIndex, inline]);
 
   // Track active index via scroll
   useEffect(() => {
