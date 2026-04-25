@@ -2,12 +2,22 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+export type SubscriptionTier = "free" | "starter" | "pro" | "elite";
+
 interface Profile {
   id: string;
   username: string;
   avatar_url: string | null;
   is_subscriber: boolean;
+  subscription_tier: SubscriptionTier;
 }
+
+export const CATEGORY_LIMITS: Record<SubscriptionTier, number> = {
+  free: 1,
+  starter: 3,
+  pro: 10,
+  elite: Infinity,
+};
 
 interface AuthContextValue {
   user: User | null;
