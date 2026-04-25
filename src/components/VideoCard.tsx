@@ -24,7 +24,7 @@ export interface FeedVideo {
   categories: { name: string; slug: string } | null;
 }
 
-export const VideoCard = ({ video, onMutate }: { video: FeedVideo; onMutate?: () => void }) => {
+export const VideoCard = ({ video, onMutate, onOpen }: { video: FeedVideo; onMutate?: () => void; onOpen?: () => void }) => {
   const { user } = useAuth();
   const [reaction, setReaction] = useState<"like" | "dislike" | null>(null);
   const [boosted, setBoosted] = useState(false);
