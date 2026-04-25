@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { VideoCard, FeedVideo } from "@/components/VideoCard";
+import { ShortsViewer } from "@/components/ShortsViewer";
 import { Loader2 } from "lucide-react";
 
 export const Feed = () => {
   const [videos, setVideos] = useState<FeedVideo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewerStart, setViewerStart] = useState<number | null>(null);
 
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
         .from("videos")
         .select(
-          "id, url, platform, external_id, title, thumbnail_url, like_count, dislike_count, boost_count, created_at, posted_by, category_id, profiles!videos_posted_by_fkey(username, avatar_url), categories(name, slug)"
+          "id, url, platform, external_id, title, thumbnail_url, like_count, dislike_count, boost_count, report_count, flagged, created_at, posted_by, category_id, profiles!videos_posted_by_fkey(username, avatar_url), categories(name, slug)"
         )
         .order("boost_count", { ascending: false })
         .order("created_at", { ascending: false })
@@ -43,10 +45,15 @@ export const Feed = () => {
   }
 
   return (
-    <div className="snap-y-mandatory overflow-y-auto no-scrollbar h-[calc(100vh-3.5rem-4rem)]">
-      {videos.map((v) => (
-        <VideoCard key={v.id} video={v} />
-      ))}
-    </div>
+    <>
+      <div className="snap-y-mandatory overflow-y-auto no-scrollbar h-[calc(100vh-3.5rem-4rem)]">
+        {videos.map((v, i) => (
+          <VideoCard key={v.id} video={v} onOpen={() => setViewerStart(i)} />
+        ))}
+      </div>
+      {viewerStart !== null && (
+        <ShortsViewer videos={videos} startIndex={viewerStart} onClose={() => setViewerStart(null)} />
+      )}
+    </>
   );
 };
