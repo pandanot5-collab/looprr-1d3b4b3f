@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { VideoCard, FeedVideo } from "@/components/VideoCard";
+import { FeedVideo } from "@/components/VideoCard";
 import { ShortsViewer } from "@/components/ShortsViewer";
 import { Loader2 } from "lucide-react";
 
 export const Feed = () => {
   const [videos, setVideos] = useState<FeedVideo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewerStart, setViewerStart] = useState<number | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -44,16 +43,5 @@ export const Feed = () => {
     );
   }
 
-  return (
-    <>
-      <div className="snap-y-mandatory overflow-y-auto no-scrollbar h-[calc(100vh-3.5rem-4rem)]">
-        {videos.map((v, i) => (
-          <VideoCard key={v.id} video={v} onOpen={() => setViewerStart(i)} />
-        ))}
-      </div>
-      {viewerStart !== null && (
-        <ShortsViewer videos={videos} startIndex={viewerStart} onClose={() => setViewerStart(null)} />
-      )}
-    </>
-  );
+  return <ShortsViewer videos={videos} inline />;
 };
