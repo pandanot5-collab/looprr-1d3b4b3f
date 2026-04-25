@@ -28,12 +28,12 @@ interface CategoryOpt {
 }
 
 const Post = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const presetCategory = params.get("category");
 
-  const [myCategory, setMyCategory] = useState<CategoryOpt | null>(null);
+  const [myCategories, setMyCategories] = useState<CategoryOpt[]>([]);
   const [allCategories, setAllCategories] = useState<CategoryOpt[]>([]);
   const [collabIds, setCollabIds] = useState<Set<string>>(new Set());
   const [selectedCat, setSelectedCat] = useState<CategoryOpt | null>(null);
@@ -47,6 +47,11 @@ const Post = () => {
   const [title, setTitle] = useState("");
   const [categoryName, setCategoryName] = useState("");
   const [categoryDesc, setCategoryDesc] = useState("");
+
+  const tier = profile?.subscription_tier ?? "free";
+  const categoryLimit = CATEGORY_LIMITS[tier];
+  const ownedCount = myCategories.length;
+  const canCreateMore = ownedCount < categoryLimit;
 
   useEffect(() => {
     if (authLoading) return;
@@ -64,16 +69,16 @@ const Post = () => {
       ]);
       const allCats = (cats as CategoryOpt[]) ?? [];
       setAllCategories(allCats);
-      const mine = allCats.find((c) => c.owner_id === user.id) ?? null;
-      setMyCategory(mine);
+      const mine = allCats.filter((c) => c.owner_id === user.id);
+      setMyCategories(mine);
       const collabSet = new Set((collabs ?? []).map((c) => c.category_id));
       setCollabIds(collabSet);
 
       if (presetCategory) {
         const found = allCats.find((c) => c.slug === presetCategory);
         if (found && canPost(found, user.id, mine, collabSet)) setSelectedCat(found);
-      } else if (mine) {
-        setSelectedCat(mine);
+      } else if (mine.length > 0) {
+        setSelectedCat(mine[0]);
       }
       setChecking(false);
     };
