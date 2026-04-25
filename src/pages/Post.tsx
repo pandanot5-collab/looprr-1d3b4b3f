@@ -180,7 +180,7 @@ const Post = () => {
   }
 
   const postable = user
-    ? allCategories.filter((c) => canPost(c, user.id, myCategory, collabIds))
+    ? allCategories.filter((c) => canPost(c, user.id, myCategories, collabIds))
     : [];
   const filtered = postable.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase()),
