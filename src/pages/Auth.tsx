@@ -62,7 +62,6 @@ const Auth = () => {
       options: {
         shouldCreateUser: mode === "signup",
         data: mode === "signup" ? { username } : undefined,
-        emailRedirectTo: window.location.origin,
       },
     });
     setLoading(false);
