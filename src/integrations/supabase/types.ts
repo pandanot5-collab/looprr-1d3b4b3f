@@ -111,6 +111,7 @@ export type Database = {
           created_at: string
           id: string
           is_subscriber: boolean
+          subscription_tier: Database["public"]["Enums"]["subscription_tier"]
           updated_at: string
           username: string
         }
@@ -119,6 +120,7 @@ export type Database = {
           created_at?: string
           id: string
           is_subscriber?: boolean
+          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           updated_at?: string
           username: string
         }
@@ -127,6 +129,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_subscriber?: boolean
+          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           updated_at?: string
           username?: string
         }
@@ -309,10 +312,15 @@ export type Database = {
         Args: { _category_id: string; _user_id: string }
         Returns: boolean
       }
+      category_limit_for: {
+        Args: { _tier: Database["public"]["Enums"]["subscription_tier"] }
+        Returns: number
+      }
       required_reports_for: { Args: { _likes: number }; Returns: number }
     }
     Enums: {
       reaction_type: "like" | "dislike"
+      subscription_tier: "free" | "starter" | "pro" | "elite"
       video_platform: "tiktok" | "youtube_shorts"
     }
     CompositeTypes: {
@@ -442,6 +450,7 @@ export const Constants = {
   public: {
     Enums: {
       reaction_type: ["like", "dislike"],
+      subscription_tier: ["free", "starter", "pro", "elite"],
       video_platform: ["tiktok", "youtube_shorts"],
     },
   },

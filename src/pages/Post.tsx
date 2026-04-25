@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, CATEGORY_LIMITS } from "@/hooks/useAuth";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,12 +28,12 @@ interface CategoryOpt {
 }
 
 const Post = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const presetCategory = params.get("category");
 
-  const [myCategory, setMyCategory] = useState<CategoryOpt | null>(null);
+  const [myCategories, setMyCategories] = useState<CategoryOpt[]>([]);
   const [allCategories, setAllCategories] = useState<CategoryOpt[]>([]);
   const [collabIds, setCollabIds] = useState<Set<string>>(new Set());
   const [selectedCat, setSelectedCat] = useState<CategoryOpt | null>(null);
@@ -47,6 +47,11 @@ const Post = () => {
   const [title, setTitle] = useState("");
   const [categoryName, setCategoryName] = useState("");
   const [categoryDesc, setCategoryDesc] = useState("");
+
+  const tier = profile?.subscription_tier ?? "free";
+  const categoryLimit = CATEGORY_LIMITS[tier];
+  const ownedCount = myCategories.length;
+  const canCreateMore = ownedCount < categoryLimit;
 
   useEffect(() => {
     if (authLoading) return;
@@ -64,16 +69,16 @@ const Post = () => {
       ]);
       const allCats = (cats as CategoryOpt[]) ?? [];
       setAllCategories(allCats);
-      const mine = allCats.find((c) => c.owner_id === user.id) ?? null;
-      setMyCategory(mine);
+      const mine = allCats.filter((c) => c.owner_id === user.id);
+      setMyCategories(mine);
       const collabSet = new Set((collabs ?? []).map((c) => c.category_id));
       setCollabIds(collabSet);
 
       if (presetCategory) {
         const found = allCats.find((c) => c.slug === presetCategory);
         if (found && canPost(found, user.id, mine, collabSet)) setSelectedCat(found);
-      } else if (mine) {
-        setSelectedCat(mine);
+      } else if (mine.length > 0) {
+        setSelectedCat(mine[0]);
       }
       setChecking(false);
     };
@@ -83,12 +88,16 @@ const Post = () => {
   const canPost = (
     c: CategoryOpt,
     uid: string,
-    mine: CategoryOpt | null,
+    _mine: CategoryOpt[],
     collabSet: Set<string>,
   ) => c.owner_id === uid || !c.locked || collabSet.has(c.id);
 
   const handleCreateCategory = async () => {
     if (!user) return;
+    if (!canCreateMore) {
+      toast(`Your plan allows ${categoryLimit} ${categoryLimit === 1 ? "category" : "categories"}. Upgrade for more.`);
+      return;
+    }
     const result = categoryNameSchema.safeParse(categoryName);
     if (!result.success) {
       toast(result.error.issues[0].message);
@@ -113,10 +122,12 @@ const Post = () => {
       return;
     }
     const newCat = data as CategoryOpt;
-    setMyCategory(newCat);
+    setMyCategories((prev) => [newCat, ...prev]);
     setAllCategories((prev) => [newCat, ...prev]);
     setSelectedCat(newCat);
     setShowCreate(false);
+    setCategoryName("");
+    setCategoryDesc("");
     toast("Category created");
   };
 
@@ -169,7 +180,7 @@ const Post = () => {
   }
 
   const postable = user
-    ? allCategories.filter((c) => canPost(c, user.id, myCategory, collabIds))
+    ? allCategories.filter((c) => canPost(c, user.id, myCategories, collabIds))
     : [];
   const filtered = postable.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase()),
@@ -192,9 +203,11 @@ const Post = () => {
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="font-semibold">Create your category</h2>
+                <h2 className="font-semibold">Create a category</h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Each user gets one category they own.
+                  {categoryLimit === Infinity
+                    ? `Elite plan · unlimited categories (you own ${ownedCount})`
+                    : `${tier.charAt(0).toUpperCase() + tier.slice(1)} plan · ${ownedCount} of ${categoryLimit} used`}
                 </p>
               </div>
             </div>
@@ -223,12 +236,14 @@ const Post = () => {
               />
             </div>
             <div className="flex gap-2">
-              {myCategory === null && (
-                <Button variant="outline" onClick={() => setShowCreate(false)} className="flex-1">
-                  Cancel
-                </Button>
-              )}
-              <Button onClick={handleCreateCategory} disabled={submitting} className="flex-1 h-11">
+              <Button variant="outline" onClick={() => setShowCreate(false)} className="flex-1">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateCategory}
+                disabled={submitting || !canCreateMore}
+                className="flex-1 h-11"
+              >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create"}
               </Button>
             </div>
@@ -276,14 +291,22 @@ const Post = () => {
                   ))
                 )}
               </div>
-              {!myCategory && (
-                <button
-                  onClick={() => setShowCreate(true)}
-                  className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
-                >
-                  + Create your own category
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  if (!canCreateMore) {
+                    toast(`Your ${tier} plan allows ${categoryLimit} ${categoryLimit === 1 ? "category" : "categories"}.`, {
+                      description: "Upgrade your plan to create more.",
+                    });
+                    return;
+                  }
+                  setShowCreate(true);
+                }}
+                className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 text-left"
+              >
+                {canCreateMore
+                  ? `+ Create a new category (${ownedCount}/${categoryLimit === Infinity ? "∞" : categoryLimit} used)`
+                  : `Category limit reached (${ownedCount}/${categoryLimit}) — upgrade for more`}
+              </button>
             </div>
 
             <div className="space-y-1.5">
