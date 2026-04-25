@@ -11,6 +11,7 @@ interface CategoryRow {
   slug: string;
   description: string | null;
   owner_id: string;
+  image_url: string | null;
   video_count?: number;
 }
 
@@ -22,7 +23,7 @@ const Browse = () => {
     const load = async () => {
       const { data: cats } = await supabase
         .from("categories")
-        .select("id, name, slug, description, owner_id")
+        .select("id, name, slug, description, owner_id, image_url")
         .order("created_at", { ascending: false });
       if (!cats) return;
 
@@ -73,15 +74,28 @@ const Browse = () => {
               <Link
                 key={c.id}
                 to={`/c/${c.slug}`}
-                className="surface-elevated border border-border rounded-2xl p-4 hover:border-foreground transition-colors flex flex-col gap-2 aspect-square"
+                className="surface-elevated border border-border rounded-2xl overflow-hidden hover:border-foreground transition-colors flex flex-col aspect-square relative"
               >
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-                  {c.video_count} {c.video_count === 1 ? "video" : "videos"}
-                </span>
-                <span className="text-lg font-semibold tracking-tight mt-auto">#{c.name}</span>
-                {c.description && (
-                  <p className="text-xs text-muted-foreground line-clamp-2">{c.description}</p>
-                )}
+                {c.image_url ? (
+                  <>
+                    <img
+                      src={c.image_url}
+                      alt={c.name}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+                  </>
+                ) : null}
+                <div className="relative z-10 p-4 flex flex-col gap-2 h-full">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                    {c.video_count} {c.video_count === 1 ? "video" : "videos"}
+                  </span>
+                  <span className="text-lg font-semibold tracking-tight mt-auto">#{c.name}</span>
+                  {c.description && (
+                    <p className="text-xs text-muted-foreground line-clamp-2">{c.description}</p>
+                  )}
+                </div>
               </Link>
             ))}
           </div>

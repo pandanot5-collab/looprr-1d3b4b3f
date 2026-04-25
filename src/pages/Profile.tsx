@@ -10,6 +10,7 @@ const Profile = () => {
   const { user, profile, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ videos: 0, totalLikes: 0, totalBoosts: 0 });
+  const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 });
   const [category, setCategory] = useState<{ name: string; slug: string } | null>(null);
 
   useEffect(() => {
@@ -38,6 +39,13 @@ const Profile = () => {
           totalBoosts: data.reduce((s, v) => s + v.boost_count, 0),
         });
       });
+
+    Promise.all([
+      supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", user.id),
+      supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", user.id),
+    ]).then(([f, g]) => {
+      setFollowCounts({ followers: f.count ?? 0, following: g.count ?? 0 });
+    });
   }, [user, loading, navigate]);
 
   if (loading || !profile) {
@@ -69,6 +77,10 @@ const Profile = () => {
           <Stat label="Videos" value={stats.videos} />
           <Stat label="Likes" value={stats.totalLikes} />
           <Stat label="Boosts" value={stats.totalBoosts} />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <Stat label="Followers" value={followCounts.followers} />
+          <Stat label="Following" value={followCounts.following} />
         </div>
 
         {/* Category */}

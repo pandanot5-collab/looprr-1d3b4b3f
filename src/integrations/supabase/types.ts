@@ -19,6 +19,8 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          image_url: string | null
+          locked: boolean
           name: string
           owner_id: string
           slug: string
@@ -27,6 +29,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          image_url?: string | null
+          locked?: boolean
           name: string
           owner_id: string
           slug: string
@@ -35,6 +39,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          image_url?: string | null
+          locked?: boolean
           name?: string
           owner_id?: string
           slug?: string
@@ -48,6 +54,56 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      category_collaborators: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_collaborators_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -219,7 +275,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_post_to_category: {
+        Args: { _category_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       reaction_type: "like" | "dislike"
