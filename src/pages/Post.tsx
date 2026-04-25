@@ -88,12 +88,16 @@ const Post = () => {
   const canPost = (
     c: CategoryOpt,
     uid: string,
-    mine: CategoryOpt | null,
+    _mine: CategoryOpt[],
     collabSet: Set<string>,
   ) => c.owner_id === uid || !c.locked || collabSet.has(c.id);
 
   const handleCreateCategory = async () => {
     if (!user) return;
+    if (!canCreateMore) {
+      toast(`Your plan allows ${categoryLimit} ${categoryLimit === 1 ? "category" : "categories"}. Upgrade for more.`);
+      return;
+    }
     const result = categoryNameSchema.safeParse(categoryName);
     if (!result.success) {
       toast(result.error.issues[0].message);
@@ -118,10 +122,12 @@ const Post = () => {
       return;
     }
     const newCat = data as CategoryOpt;
-    setMyCategory(newCat);
+    setMyCategories((prev) => [newCat, ...prev]);
     setAllCategories((prev) => [newCat, ...prev]);
     setSelectedCat(newCat);
     setShowCreate(false);
+    setCategoryName("");
+    setCategoryDesc("");
     toast("Category created");
   };
 
