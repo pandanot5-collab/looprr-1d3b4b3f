@@ -13,8 +13,9 @@ import type { FeedVideo } from "@/components/VideoCard";
 
 interface Props {
   videos: FeedVideo[];
-  startIndex: number;
-  onClose: () => void;
+  startIndex?: number;
+  onClose?: () => void;
+  inline?: boolean;
 }
 
 interface Counts {
