@@ -103,6 +103,7 @@ export const ShortsViewer = ({ videos, startIndex = 0, onClose, inline = false }
 
   // Esc to close
   useEffect(() => {
+    if (!onClose) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
