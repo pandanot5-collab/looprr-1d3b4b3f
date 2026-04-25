@@ -291,14 +291,22 @@ const Post = () => {
                   ))
                 )}
               </div>
-              {!myCategory && (
-                <button
-                  onClick={() => setShowCreate(true)}
-                  className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
-                >
-                  + Create your own category
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  if (!canCreateMore) {
+                    toast(`Your ${tier} plan allows ${categoryLimit} ${categoryLimit === 1 ? "category" : "categories"}.`, {
+                      description: "Upgrade your plan to create more.",
+                    });
+                    return;
+                  }
+                  setShowCreate(true);
+                }}
+                className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 text-left"
+              >
+                {canCreateMore
+                  ? `+ Create a new category (${ownedCount}/${categoryLimit === Infinity ? "∞" : categoryLimit} used)`
+                  : `Category limit reached (${ownedCount}/${categoryLimit}) — upgrade for more`}
+              </button>
             </div>
 
             <div className="space-y-1.5">
