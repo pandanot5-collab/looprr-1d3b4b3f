@@ -37,7 +37,7 @@ const Category = () => {
   const [collabUsername, setCollabUsername] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [viewerStart, setViewerStart] = useState<number | null>(null);
+  
 
   const isOwner = user && category && user.id === category.owner_id;
 
