@@ -26,7 +26,7 @@ interface Counts {
   flagged: boolean;
 }
 
-export const ShortsViewer = ({ videos, startIndex, onClose }: Props) => {
+export const ShortsViewer = ({ videos, startIndex = 0, onClose, inline = false }: Props) => {
   const { user } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(startIndex);
