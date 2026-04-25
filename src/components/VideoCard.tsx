@@ -137,15 +137,6 @@ export const VideoCard = ({ video, onMutate, onOpen }: { video: FeedVideo; onMut
               </div>
             </a>
           )}
-          {onOpen && (
-            <button
-              onClick={onOpen}
-              aria-label="Open fullscreen"
-              className="absolute top-2 right-2 z-10 px-3 h-8 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-medium hover:bg-black/80 transition-colors"
-            >
-              Fullscreen
-            </button>
-          )}
         </div>
 
         {/* Meta */}

@@ -23,17 +23,22 @@ const Browse = () => {
     const load = async () => {
       const { data: cats } = await supabase
         .from("categories")
-        .select("id, name, slug, description, owner_id, image_url")
-        .order("created_at", { ascending: false });
+        .select("id, name, slug, description, owner_id, image_url");
       if (!cats) return;
 
-      const { data: vids } = await supabase.from("videos").select("category_id");
+      const { data: vids } = await supabase
+        .from("videos")
+        .select("category_id, like_count");
       const counts: Record<string, number> = {};
-      vids?.forEach((v) => {
+      const likes: Record<string, number> = {};
+      vids?.forEach((v: any) => {
         counts[v.category_id] = (counts[v.category_id] ?? 0) + 1;
+        likes[v.category_id] = (likes[v.category_id] ?? 0) + (v.like_count ?? 0);
       });
 
-      setCategories(cats.map((c) => ({ ...c, video_count: counts[c.id] ?? 0 })));
+      const enriched = cats.map((c) => ({ ...c, video_count: counts[c.id] ?? 0 }));
+      enriched.sort((a, b) => (likes[b.id] ?? 0) - (likes[a.id] ?? 0));
+      setCategories(enriched);
     };
     load();
   }, []);

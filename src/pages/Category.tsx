@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppShell, Avatar } from "@/components/AppShell";
-import { VideoCard, FeedVideo } from "@/components/VideoCard";
+import { FeedVideo } from "@/components/VideoCard";
 import { ShortsViewer } from "@/components/ShortsViewer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,7 @@ const Category = () => {
   const [collabUsername, setCollabUsername] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [viewerStart, setViewerStart] = useState<number | null>(null);
+  
 
   const isOwner = user && category && user.id === category.owner_id;
 
@@ -334,14 +334,7 @@ const Category = () => {
           No videos in this category yet.
         </div>
       ) : (
-        <div className="snap-y-mandatory overflow-y-auto no-scrollbar h-[calc(100vh-3.5rem-4rem-9rem)]">
-          {videos.map((v, i) => (
-            <VideoCard key={v.id} video={v} onOpen={() => setViewerStart(i)} />
-          ))}
-        </div>
-      )}
-      {viewerStart !== null && (
-        <ShortsViewer videos={videos} startIndex={viewerStart} onClose={() => setViewerStart(null)} />
+        <ShortsViewer videos={videos} inline />
       )}
     </AppShell>
   );

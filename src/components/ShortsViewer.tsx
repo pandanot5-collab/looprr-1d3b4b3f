@@ -13,8 +13,9 @@ import type { FeedVideo } from "@/components/VideoCard";
 
 interface Props {
   videos: FeedVideo[];
-  startIndex: number;
-  onClose: () => void;
+  startIndex?: number;
+  onClose?: () => void;
+  inline?: boolean;
 }
 
 interface Counts {
@@ -25,7 +26,7 @@ interface Counts {
   flagged: boolean;
 }
 
-export const ShortsViewer = ({ videos, startIndex, onClose }: Props) => {
+export const ShortsViewer = ({ videos, startIndex = 0, onClose, inline = false }: Props) => {
   const { user } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(startIndex);
@@ -58,11 +59,13 @@ export const ShortsViewer = ({ videos, startIndex, onClose }: Props) => {
     if (!el) return;
     const child = el.children[startIndex] as HTMLElement | undefined;
     if (child) el.scrollTo({ top: child.offsetTop, behavior: "instant" as ScrollBehavior });
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [startIndex]);
+    if (!inline) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [startIndex, inline]);
 
   // Track active index via scroll
   useEffect(() => {
@@ -100,6 +103,7 @@ export const ShortsViewer = ({ videos, startIndex, onClose }: Props) => {
 
   // Esc to close
   useEffect(() => {
+    if (!onClose) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
@@ -194,14 +198,16 @@ export const ShortsViewer = ({ videos, startIndex, onClose }: Props) => {
   const requiredReports = (likes: number) => Math.max(3, 3 + Math.floor(likes / 10));
 
   return (
-    <div className="fixed inset-0 z-50 bg-black">
-      <button
-        onClick={onClose}
-        aria-label="Close"
-        className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/70 transition-colors"
-      >
-        <X className="w-5 h-5" />
-      </button>
+    <div className={cn(inline ? "relative w-full bg-black h-[calc(100vh-3.5rem-4rem)]" : "fixed inset-0 z-50 bg-black")}>
+      {!inline && onClose && (
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/70 transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      )}
 
       <div
         ref={containerRef}
