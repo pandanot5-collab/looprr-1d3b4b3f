@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Compass, Plus, Search, User, Sun, Moon, Crown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+import { UsernameDisplay } from "@/components/UsernameDisplay";
 import logo from "@/assets/loopr-logo.png";
 import { cn } from "@/lib/utils";
 
