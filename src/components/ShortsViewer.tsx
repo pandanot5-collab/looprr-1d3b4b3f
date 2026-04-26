@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { FeedVideo } from "@/components/VideoCard";
+import { TikTokEmbed } from "@/components/TikTokEmbed";
 
 interface Props {
   videos: FeedVideo[];
@@ -236,6 +237,10 @@ export const ShortsViewer = ({ videos, startIndex = 0, onClose, inline = false }
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
+                ) : v.platform === "tiktok" && v.external_id ? (
+                  <div className="w-full h-full overflow-y-auto bg-black flex items-start justify-center">
+                    <TikTokEmbed videoId={v.external_id} url={v.url} className="w-full" />
+                  </div>
                 ) : (
                   <a
                     href={v.url}
