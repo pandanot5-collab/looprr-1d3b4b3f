@@ -1,12 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import { Heart, ThumbsDown, Zap, Flag, X, ExternalLink, AlertTriangle } from "lucide-react";
+import { Heart, ThumbsDown, Zap, Flag, X, ExternalLink, AlertTriangle, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar } from "@/components/AppShell";
+import { UsernameDisplay } from "@/components/UsernameDisplay";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { FeedVideo } from "@/components/VideoCard";
