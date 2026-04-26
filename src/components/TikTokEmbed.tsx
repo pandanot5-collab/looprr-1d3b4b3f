@@ -37,45 +37,22 @@ export const TikTokEmbed = ({ videoId, url, className }: Props) => {
     return () => clearTimeout(t);
   }, [videoId]);
 
-  // Zoom in so the right-side TikTok action rail (like/comment/share) is cropped out.
-  // The embed is roughly 9:16 video + ~80px right rail. Scaling 1.35x and shifting left hides it.
   return (
-    <div
-      className={className}
-      style={{
-        background: "#000",
-        overflow: "hidden",
-        position: "relative",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div
+    <div className={className} style={{ background: "#000" }}>
+      <blockquote
+        ref={ref}
+        className="tiktok-embed"
+        cite={url}
+        data-video-id={videoId}
         style={{
-          transform: "scale(1.4) translateX(-9%)",
-          transformOrigin: "center center",
-          width: "100%",
           maxWidth: "605px",
+          minWidth: "325px",
+          margin: 0,
+          background: "#000",
         }}
       >
-        <blockquote
-          ref={ref}
-          className="tiktok-embed"
-          cite={url}
-          data-video-id={videoId}
-          style={{
-            maxWidth: "605px",
-            minWidth: "325px",
-            margin: 0,
-            background: "#000",
-          }}
-        >
-          <section />
-        </blockquote>
-      </div>
+        <section />
+      </blockquote>
     </div>
   );
 };
