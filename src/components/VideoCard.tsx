@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Avatar } from "@/components/AppShell";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { TikTokEmbed } from "@/components/TikTokEmbed";
 
 export interface FeedVideo {
   id: string;
@@ -121,6 +122,10 @@ export const VideoCard = ({ video, onMutate, onOpen }: { video: FeedVideo; onMut
               allowFullScreen
               loading="lazy"
             />
+          ) : video.platform === "tiktok" && video.external_id ? (
+            <div className="w-full h-full overflow-y-auto bg-black flex items-start justify-center">
+              <TikTokEmbed videoId={video.external_id} url={video.url} className="w-full" />
+            </div>
           ) : (
             <a
               href={video.url}
