@@ -344,12 +344,40 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
                     onClick={() => openReport(v.id)}
                     small
                   />
+                  {canDelete(v) && (
+                    <RailButton
+                      icon={<Trash2 className="w-6 h-6 text-red-400" />}
+                      label=""
+                      onClick={() => setDeleteTarget(v.id)}
+                      small
+                    />
+                  )}
                 </div>
               </div>
             </section>
           );
         })}
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this video?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove the video from this category. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={reportOpen} onOpenChange={setReportOpen}>
         <DialogContent>
