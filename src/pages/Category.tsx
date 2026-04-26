@@ -17,6 +17,7 @@ import {
   X,
   Settings,
 } from "lucide-react";
+import { UsernameDisplay } from "@/components/UsernameDisplay";
 
 interface Collaborator {
   id: string;
@@ -233,7 +234,9 @@ const Category = () => {
             size={24}
           />
           <span className="text-muted-foreground">curated by</span>
-          <span className="font-semibold">@{category.profiles?.username}</span>
+          <span className="font-semibold">
+            <UsernameDisplay userId={category.owner_id} username={category.profiles?.username} />
+          </span>
         </Link>
 
         {/* Owner settings panel */}
@@ -312,7 +315,9 @@ const Category = () => {
                     >
                       <div className="flex items-center gap-2">
                         <Avatar username={c.username} url={c.avatar_url} size={20} />
-                        <span className="text-sm">@{c.username}</span>
+                        <span className="text-sm">
+                          <UsernameDisplay userId={c.user_id} username={c.username} />
+                        </span>
                       </div>
                       <button
                         onClick={() => removeCollaborator(c.id)}
