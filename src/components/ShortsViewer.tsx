@@ -215,6 +215,28 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
 
   const requiredReports = (likes: number) => Math.max(3, 3 + Math.floor(likes / 10));
 
+  const canDelete = (v: FeedVideo) => {
+    if (!user) return false;
+    if (isAdmin) return true;
+    if (v.posted_by === user.id) return true;
+    if (v.categories?.owner_id && v.categories.owner_id === user.id) return true;
+    return false;
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget;
+    const { error } = await supabase.from("videos").delete().eq("id", id);
+    setDeleteTarget(null);
+    if (error) {
+      toast("Couldn't delete", { description: error.message });
+      return;
+    }
+    setVideos((prev) => prev.filter((v) => v.id !== id));
+    toast("Video deleted");
+  };
+
+
   return (
     <div className={cn(inline ? "relative w-full bg-black h-[calc(100vh-3.5rem-4rem)]" : "fixed inset-0 z-50 bg-black")}>
       {!inline && onClose && (
@@ -280,7 +302,9 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
                   <div className="pointer-events-auto flex flex-col gap-2">
                     <Link to={`/u/${v.profiles?.username}`} className="flex items-center gap-2 w-fit">
                       <Avatar username={v.profiles?.username ?? "?"} url={v.profiles?.avatar_url} size={32} />
-                      <span className="text-sm font-semibold">@{v.profiles?.username}</span>
+                      <span className="text-sm font-semibold">
+                        <UsernameDisplay userId={v.posted_by} username={v.profiles?.username} iconSize={14} />
+                      </span>
                     </Link>
                     {v.categories && (
                       <Link to={`/c/${v.categories.slug}`} className="text-xs text-white/80 w-fit">
