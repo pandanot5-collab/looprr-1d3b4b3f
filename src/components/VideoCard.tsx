@@ -7,6 +7,7 @@ import { Avatar } from "@/components/AppShell";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { TikTokEmbed } from "@/components/TikTokEmbed";
+import { UsernameDisplay } from "@/components/UsernameDisplay";
 
 export interface FeedVideo {
   id: string;
@@ -22,7 +23,7 @@ export interface FeedVideo {
   posted_by: string;
   category_id: string;
   profiles: { username: string; avatar_url: string | null } | null;
-  categories: { name: string; slug: string } | null;
+  categories: { name: string; slug: string; owner_id?: string } | null;
 }
 
 export const VideoCard = ({ video, onMutate, onOpen }: { video: FeedVideo; onMutate?: () => void; onOpen?: () => void }) => {
@@ -150,7 +151,9 @@ export const VideoCard = ({ video, onMutate, onOpen }: { video: FeedVideo; onMut
             <div className="flex items-center gap-2 min-w-0">
               <Avatar username={video.profiles?.username ?? "?"} url={video.profiles?.avatar_url} size={32} />
               <div className="min-w-0">
-                <p className="text-sm font-semibold truncate">@{video.profiles?.username}</p>
+                <p className="text-sm font-semibold truncate">
+                  <UsernameDisplay userId={video.posted_by} username={video.profiles?.username} />
+                </p>
                 {video.categories && (
                   <Link
                     to={`/c/${video.categories.slug}`}

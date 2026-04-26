@@ -1,12 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import { Heart, ThumbsDown, Zap, Flag, X, ExternalLink, AlertTriangle } from "lucide-react";
+import { Heart, ThumbsDown, Zap, Flag, X, ExternalLink, AlertTriangle, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar } from "@/components/AppShell";
+import { UsernameDisplay } from "@/components/UsernameDisplay";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { FeedVideo } from "@/components/VideoCard";
@@ -27,15 +38,20 @@ interface Counts {
   flagged: boolean;
 }
 
-export const ShortsViewer = ({ videos, startIndex = 0, onClose, inline = false }: Props) => {
-  const { user } = useAuth();
+export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, inline = false }: Props) => {
+  const { user, isAdmin } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(startIndex);
+  const [videos, setVideos] = useState<FeedVideo[]>(initialVideos);
+
+  useEffect(() => {
+    setVideos(initialVideos);
+  }, [initialVideos]);
 
   // Per-video state keyed by id
   const [counts, setCounts] = useState<Record<string, Counts>>(() =>
     Object.fromEntries(
-      videos.map((v) => [
+      initialVideos.map((v) => [
         v.id,
         {
           like: v.like_count,
@@ -53,6 +69,7 @@ export const ShortsViewer = ({ videos, startIndex = 0, onClose, inline = false }
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportTarget, setReportTarget] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   // Scroll to start index on mount
   useEffect(() => {
@@ -198,6 +215,28 @@ export const ShortsViewer = ({ videos, startIndex = 0, onClose, inline = false }
 
   const requiredReports = (likes: number) => Math.max(3, 3 + Math.floor(likes / 10));
 
+  const canDelete = (v: FeedVideo) => {
+    if (!user) return false;
+    if (isAdmin) return true;
+    if (v.posted_by === user.id) return true;
+    if (v.categories?.owner_id && v.categories.owner_id === user.id) return true;
+    return false;
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget;
+    const { error } = await supabase.from("videos").delete().eq("id", id);
+    setDeleteTarget(null);
+    if (error) {
+      toast("Couldn't delete", { description: error.message });
+      return;
+    }
+    setVideos((prev) => prev.filter((v) => v.id !== id));
+    toast("Video deleted");
+  };
+
+
   return (
     <div className={cn(inline ? "relative w-full bg-black h-[calc(100vh-3.5rem-4rem)]" : "fixed inset-0 z-50 bg-black")}>
       {!inline && onClose && (
@@ -263,7 +302,9 @@ export const ShortsViewer = ({ videos, startIndex = 0, onClose, inline = false }
                   <div className="pointer-events-auto flex flex-col gap-2">
                     <Link to={`/u/${v.profiles?.username}`} className="flex items-center gap-2 w-fit">
                       <Avatar username={v.profiles?.username ?? "?"} url={v.profiles?.avatar_url} size={32} />
-                      <span className="text-sm font-semibold">@{v.profiles?.username}</span>
+                      <span className="text-sm font-semibold">
+                        <UsernameDisplay userId={v.posted_by} username={v.profiles?.username} iconSize={14} />
+                      </span>
                     </Link>
                     {v.categories && (
                       <Link to={`/c/${v.categories.slug}`} className="text-xs text-white/80 w-fit">
@@ -303,12 +344,40 @@ export const ShortsViewer = ({ videos, startIndex = 0, onClose, inline = false }
                     onClick={() => openReport(v.id)}
                     small
                   />
+                  {canDelete(v) && (
+                    <RailButton
+                      icon={<Trash2 className="w-6 h-6 text-red-400" />}
+                      label=""
+                      onClick={() => setDeleteTarget(v.id)}
+                      small
+                    />
+                  )}
                 </div>
               </div>
             </section>
           );
         })}
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this video?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove the video from this category. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={reportOpen} onOpenChange={setReportOpen}>
         <DialogContent>

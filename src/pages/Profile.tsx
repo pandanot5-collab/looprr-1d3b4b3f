@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AppShell, Avatar } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Loader2, LogOut, ChevronRight } from "lucide-react";
+import { UsernameDisplay } from "@/components/UsernameDisplay";
 
 const Profile = () => {
   const { user, profile, loading, signOut } = useAuth();
@@ -65,7 +66,9 @@ const Profile = () => {
         <div className="flex items-center gap-4">
           <Avatar username={profile.username} url={profile.avatar_url} size={72} />
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold tracking-tight truncate">@{profile.username}</h1>
+            <h1 className="text-2xl font-bold tracking-tight truncate">
+              <UsernameDisplay userId={profile.id} username={profile.username} iconSize={20} />
+            </h1>
             <p className="text-xs text-muted-foreground font-mono mt-0.5">
               {profile.is_subscriber ? "PRO MEMBER" : "FREE TIER"}
             </p>

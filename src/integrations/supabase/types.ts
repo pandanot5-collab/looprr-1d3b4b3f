@@ -135,6 +135,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       video_boosts: {
         Row: {
           boosted_on: string
@@ -316,9 +337,17 @@ export type Database = {
         Args: { _tier: Database["public"]["Enums"]["subscription_tier"] }
         Returns: number
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       required_reports_for: { Args: { _likes: number }; Returns: number }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       reaction_type: "like" | "dislike"
       subscription_tier: "free" | "starter" | "pro" | "elite"
       video_platform: "tiktok" | "youtube_shorts"
@@ -449,6 +478,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       reaction_type: ["like", "dislike"],
       subscription_tier: ["free", "starter", "pro", "elite"],
       video_platform: ["tiktok", "youtube_shorts"],

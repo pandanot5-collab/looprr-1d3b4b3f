@@ -17,6 +17,7 @@ import {
   X,
   Settings,
 } from "lucide-react";
+import { UsernameDisplay } from "@/components/UsernameDisplay";
 
 interface Collaborator {
   id: string;
@@ -56,7 +57,7 @@ const Category = () => {
       const { data: vids } = await supabase
         .from("videos")
         .select(
-          "id, url, platform, external_id, title, thumbnail_url, like_count, dislike_count, boost_count, report_count, flagged, created_at, posted_by, category_id, profiles!videos_posted_by_fkey(username, avatar_url), categories(name, slug)",
+          "id, url, platform, external_id, title, thumbnail_url, like_count, dislike_count, boost_count, report_count, flagged, created_at, posted_by, category_id, profiles!videos_posted_by_fkey(username, avatar_url), categories(name, slug, owner_id)",
         )
         .eq("category_id", cat.id)
         .order("boost_count", { ascending: false })
@@ -233,7 +234,9 @@ const Category = () => {
             size={24}
           />
           <span className="text-muted-foreground">curated by</span>
-          <span className="font-semibold">@{category.profiles?.username}</span>
+          <span className="font-semibold">
+            <UsernameDisplay userId={category.owner_id} username={category.profiles?.username} />
+          </span>
         </Link>
 
         {/* Owner settings panel */}
@@ -312,7 +315,9 @@ const Category = () => {
                     >
                       <div className="flex items-center gap-2">
                         <Avatar username={c.username} url={c.avatar_url} size={20} />
-                        <span className="text-sm">@{c.username}</span>
+                        <span className="text-sm">
+                          <UsernameDisplay userId={c.user_id} username={c.username} />
+                        </span>
                       </div>
                       <button
                         onClick={() => removeCollaborator(c.id)}
