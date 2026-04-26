@@ -38,15 +38,20 @@ interface Counts {
   flagged: boolean;
 }
 
-export const ShortsViewer = ({ videos, startIndex = 0, onClose, inline = false }: Props) => {
-  const { user } = useAuth();
+export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, inline = false }: Props) => {
+  const { user, isAdmin } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(startIndex);
+  const [videos, setVideos] = useState<FeedVideo[]>(initialVideos);
+
+  useEffect(() => {
+    setVideos(initialVideos);
+  }, [initialVideos]);
 
   // Per-video state keyed by id
   const [counts, setCounts] = useState<Record<string, Counts>>(() =>
     Object.fromEntries(
-      videos.map((v) => [
+      initialVideos.map((v) => [
         v.id,
         {
           like: v.like_count,
@@ -64,6 +69,7 @@ export const ShortsViewer = ({ videos, startIndex = 0, onClose, inline = false }
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportTarget, setReportTarget] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   // Scroll to start index on mount
   useEffect(() => {
