@@ -42,7 +42,9 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
                 className="ml-1 flex items-center gap-2 px-2 h-9 rounded-full hover:bg-muted transition-colors"
               >
                 <Avatar username={profile.username} url={profile.avatar_url} size={24} />
-                <span className="text-sm font-medium hidden sm:inline">@{profile.username}</span>
+                <span className="text-sm font-medium hidden sm:inline">
+                  <UsernameDisplay userId={profile.id} username={profile.username} />
+                </span>
               </Link>
             )}
           </div>
