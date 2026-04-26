@@ -23,7 +23,7 @@ export interface FeedVideo {
   posted_by: string;
   category_id: string;
   profiles: { username: string; avatar_url: string | null } | null;
-  categories: { name: string; slug: string } | null;
+  categories: { name: string; slug: string; owner_id?: string } | null;
 }
 
 export const VideoCard = ({ video, onMutate, onOpen }: { video: FeedVideo; onMutate?: () => void; onOpen?: () => void }) => {
