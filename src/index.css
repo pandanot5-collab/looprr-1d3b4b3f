@@ -111,4 +111,11 @@
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   .snap-y-mandatory { scroll-snap-type: y mandatory; }
   .snap-start-always { scroll-snap-align: start; scroll-snap-stop: always; }
+  .text-gradient-admin {
+    background-image: linear-gradient(90deg, hsl(348 100% 60%), hsl(280 90% 60%), hsl(220 100% 60%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    background-size: 200% auto;
+  }
 }
