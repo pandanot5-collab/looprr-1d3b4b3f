@@ -359,6 +359,12 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
                     onClick={() => handleBoost(v.id)}
                   />
                   <RailButton
+                    icon={<Eye className="w-6 h-6" />}
+                    label={c.views}
+                    onClick={() => {}}
+                    small
+                  />
+                  <RailButton
                     icon={<Flag className={cn("w-6 h-6", rep && "fill-current text-orange-400")} />}
                     label={`${c.reports}/${required}`}
                     onClick={() => openReport(v.id)}
