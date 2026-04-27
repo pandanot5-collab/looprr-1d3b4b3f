@@ -19,6 +19,7 @@ export interface FeedVideo {
   like_count: number;
   dislike_count: number;
   boost_count: number;
+  view_count?: number;
   created_at: string;
   posted_by: string;
   category_id: string;
