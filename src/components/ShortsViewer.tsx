@@ -58,6 +58,7 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
           like: v.like_count,
           dislike: v.dislike_count,
           boost: v.boost_count,
+          views: (v as any).view_count ?? 0,
           reports: (v as any).report_count ?? 0,
           flagged: (v as any).flagged ?? false,
         },
