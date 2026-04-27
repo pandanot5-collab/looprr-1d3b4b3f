@@ -30,7 +30,7 @@ const Profile = () => {
 
     supabase
       .from("videos")
-      .select("like_count, boost_count")
+      .select("like_count, boost_count, view_count")
       .eq("posted_by", user.id)
       .then(({ data }) => {
         if (!data) return;
@@ -38,6 +38,7 @@ const Profile = () => {
           videos: data.length,
           totalLikes: data.reduce((s, v) => s + v.like_count, 0),
           totalBoosts: data.reduce((s, v) => s + v.boost_count, 0),
+          totalViews: data.reduce((s, v) => s + (v.view_count ?? 0), 0),
         });
       });
 
