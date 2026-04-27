@@ -84,6 +84,42 @@ export type Database = {
           },
         ]
       }
+      creator_badges: {
+        Row: {
+          created_at: string
+          external_id: string
+          handle: string | null
+          id: string
+          platform: Database["public"]["Enums"]["creator_platform"]
+          subscriber_count: number
+          updated_at: string
+          user_id: string
+          verified_at: string
+        }
+        Insert: {
+          created_at?: string
+          external_id: string
+          handle?: string | null
+          id?: string
+          platform: Database["public"]["Enums"]["creator_platform"]
+          subscriber_count?: number
+          updated_at?: string
+          user_id: string
+          verified_at?: string
+        }
+        Update: {
+          created_at?: string
+          external_id?: string
+          handle?: string | null
+          id?: string
+          platform?: Database["public"]["Enums"]["creator_platform"]
+          subscriber_count?: number
+          updated_at?: string
+          user_id?: string
+          verified_at?: string
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           created_at: string
@@ -352,6 +388,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      creator_platform: "youtube" | "tiktok"
       reaction_type: "like" | "dislike"
       subscription_tier: "free" | "starter" | "pro" | "elite"
       video_platform: "tiktok" | "youtube_shorts"
@@ -483,6 +520,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      creator_platform: ["youtube", "tiktok"],
       reaction_type: ["like", "dislike"],
       subscription_tier: ["free", "starter", "pro", "elite"],
       video_platform: ["tiktok", "youtube_shorts"],
