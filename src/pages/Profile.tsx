@@ -82,7 +82,8 @@ const Profile = () => {
           <Stat label="Likes" value={stats.totalLikes} />
           <Stat label="Boosts" value={stats.totalBoosts} />
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
+          <Stat label="Views" value={stats.totalViews} />
           <Stat label="Followers" value={followCounts.followers} />
           <Stat label="Following" value={followCounts.following} />
         </div>
