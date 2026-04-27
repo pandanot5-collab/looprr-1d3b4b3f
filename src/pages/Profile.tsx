@@ -10,7 +10,7 @@ import { UsernameDisplay } from "@/components/UsernameDisplay";
 const Profile = () => {
   const { user, profile, loading, signOut } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ videos: 0, totalLikes: 0, totalBoosts: 0 });
+  const [stats, setStats] = useState({ videos: 0, totalLikes: 0, totalBoosts: 0, totalViews: 0 });
   const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 });
   const [category, setCategory] = useState<{ name: string; slug: string } | null>(null);
 
