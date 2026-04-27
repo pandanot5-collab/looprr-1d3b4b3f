@@ -99,6 +99,24 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Track views: register one view per video per session, after 1.5s on the active video
+  const viewedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    const v = videos[activeIndex];
+    if (!v) return;
+    if (viewedRef.current.has(v.id)) return;
+    const id = v.id;
+    const t = setTimeout(async () => {
+      if (viewedRef.current.has(id)) return;
+      viewedRef.current.add(id);
+      const { error } = await supabase.rpc("increment_video_view", { _video_id: id });
+      if (!error) {
+        setCounts((c) => ({ ...c, [id]: { ...c[id], views: (c[id]?.views ?? 0) + 1 } }));
+      }
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [activeIndex, videos]);
+
   // Load reactions/boosts/reports for user
   useEffect(() => {
     if (!user) return;
