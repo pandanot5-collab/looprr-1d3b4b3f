@@ -49,6 +49,12 @@ const UserProfile = () => {
       setFollowers(fCount ?? 0);
       setFollowing(gCount ?? 0);
       setIsFollowing(!!(followRes as any).data);
+
+      const { data: vids } = await supabase
+        .from("videos")
+        .select("view_count")
+        .eq("posted_by", p.id);
+      setTotalViews((vids ?? []).reduce((s: number, v: any) => s + (v.view_count ?? 0), 0));
     }
     setLoading(false);
   };
