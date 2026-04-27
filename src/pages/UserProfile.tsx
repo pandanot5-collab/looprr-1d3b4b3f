@@ -131,7 +131,8 @@ const UserProfile = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
+          <Stat label="Views" value={totalViews} />
           <Stat label="Followers" value={followers} />
           <Stat label="Following" value={following} />
         </div>
