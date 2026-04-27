@@ -15,6 +15,47 @@ const Profile = () => {
   const [stats, setStats] = useState({ videos: 0, totalLikes: 0, totalBoosts: 0, totalViews: 0 });
   const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 });
   const [category, setCategory] = useState<{ name: string; slug: string } | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const badgesMap = useCreatorBadges();
+  const myBadges = (user && badgesMap.get(user.id)) || [];
+  const youtubeBadge = myBadges.find((b) => b.platform === "youtube");
+
+  const verifyYoutube = async () => {
+    if (!user) return;
+    setVerifying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("youtube-verify-start");
+      if (error || !data?.url) throw new Error(error?.message ?? "Failed to start");
+      const popup = window.open(data.url, "yt-verify", "width=520,height=640");
+      if (!popup) throw new Error("Popup blocked. Please allow popups.");
+
+      const onMessage = (e: MessageEvent) => {
+        if (e.data?.type !== "youtube-verify") return;
+        window.removeEventListener("message", onMessage);
+        setVerifying(false);
+        const p = e.data.payload;
+        if (p?.ok) {
+          toast.success(`Verified! ${p.subs?.toLocaleString?.() ?? ""} subscribers.`);
+          refreshCreatorBadges();
+        } else {
+          toast.error(p?.error ?? "Verification failed");
+        }
+      };
+      window.addEventListener("message", onMessage);
+
+      // Cleanup if popup closed without finishing
+      const poll = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(poll);
+          window.removeEventListener("message", onMessage);
+          setVerifying(false);
+        }
+      }, 600);
+    } catch (e: any) {
+      setVerifying(false);
+      toast.error(e?.message ?? "Failed to verify");
+    }
+  };
 
   useEffect(() => {
     if (loading) return;
