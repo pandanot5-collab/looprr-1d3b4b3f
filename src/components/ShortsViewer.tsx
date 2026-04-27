@@ -34,6 +34,7 @@ interface Counts {
   like: number;
   dislike: number;
   boost: number;
+  views: number;
   reports: number;
   flagged: boolean;
 }
