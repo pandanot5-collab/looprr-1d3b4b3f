@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Heart, ThumbsDown, Zap, Flag, X, ExternalLink, AlertTriangle, Trash2 } from "lucide-react";
+import { Heart, ThumbsDown, Zap, Flag, X, ExternalLink, AlertTriangle, Trash2, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
