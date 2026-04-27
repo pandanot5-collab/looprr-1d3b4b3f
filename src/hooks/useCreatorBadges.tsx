@@ -18,21 +18,21 @@ const listeners = new Set<() => void>();
 const fetchAll = async (): Promise<Map<string, CreatorBadge[]>> => {
   if (cache) return cache;
   if (inflight) return inflight;
-  inflight = supabase
-    .from("creator_badges")
-    .select("user_id, platform, handle, subscriber_count")
-    .then(({ data }) => {
-      const map = new Map<string, CreatorBadge[]>();
-      (data ?? []).forEach((b: any) => {
-        const arr = map.get(b.user_id) ?? [];
-        arr.push(b as CreatorBadge);
-        map.set(b.user_id, arr);
-      });
-      cache = map;
-      inflight = null;
-      listeners.forEach((l) => l());
-      return map;
+  inflight = (async () => {
+    const { data } = await supabase
+      .from("creator_badges")
+      .select("user_id, platform, handle, subscriber_count");
+    const map = new Map<string, CreatorBadge[]>();
+    (data ?? []).forEach((b: any) => {
+      const arr = map.get(b.user_id) ?? [];
+      arr.push(b as CreatorBadge);
+      map.set(b.user_id, arr);
     });
+    cache = map;
+    inflight = null;
+    listeners.forEach((l) => l());
+    return map;
+  })();
   return inflight;
 };
 
