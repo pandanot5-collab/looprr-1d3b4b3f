@@ -4,8 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppShell, Avatar } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
-import { Loader2, LogOut, ChevronRight } from "lucide-react";
+import { Loader2, LogOut, ChevronRight, Youtube, CheckCircle2 } from "lucide-react";
 import { UsernameDisplay } from "@/components/UsernameDisplay";
+import { refreshCreatorBadges, useCreatorBadges } from "@/hooks/useCreatorBadges";
+import { toast } from "sonner";
 
 const Profile = () => {
   const { user, profile, loading, signOut } = useAuth();
