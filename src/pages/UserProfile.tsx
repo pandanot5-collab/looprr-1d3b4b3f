@@ -16,6 +16,7 @@ const UserProfile = () => {
   const [category, setCategory] = useState<any>(null);
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
+  const [totalViews, setTotalViews] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
