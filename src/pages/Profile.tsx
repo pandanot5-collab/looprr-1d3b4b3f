@@ -154,6 +154,39 @@ const Profile = () => {
           </Link>
         )}
 
+        {/* Creator verification */}
+        <div className="surface-elevated border border-border rounded-2xl p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                Creator verification
+              </span>
+              <p className="text-sm font-semibold flex items-center gap-2 mt-0.5">
+                <Youtube className="w-4 h-4" style={{ color: "hsl(0 100% 50%)" }} />
+                YouTube
+                {youtubeBadge && <CheckCircle2 className="w-4 h-4 text-accent" />}
+              </p>
+              {youtubeBadge ? (
+                <p className="text-xs text-muted-foreground mt-1 truncate">
+                  {youtubeBadge.handle} · {youtubeBadge.subscriber_count.toLocaleString()} subs
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Connect YouTube to earn the badge (100K+ subs)
+                </p>
+              )}
+            </div>
+            <Button
+              size="sm"
+              variant={youtubeBadge ? "outline" : "default"}
+              onClick={verifyYoutube}
+              disabled={verifying}
+            >
+              {verifying ? <Loader2 className="w-4 h-4 animate-spin" /> : youtubeBadge ? "Re-check" : "Connect"}
+            </Button>
+          </div>
+        </div>
+
         {/* Sign out */}
         <Button
           variant="outline"
