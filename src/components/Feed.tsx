@@ -13,7 +13,7 @@ export const Feed = () => {
       const { data } = await supabase
         .from("videos")
         .select(
-          "id, url, platform, external_id, title, thumbnail_url, like_count, dislike_count, boost_count, report_count, flagged, created_at, posted_by, category_id, profiles!videos_posted_by_fkey(username, avatar_url), categories(name, slug, owner_id)"
+          "id, url, platform, external_id, title, thumbnail_url, like_count, dislike_count, boost_count, view_count, report_count, flagged, created_at, posted_by, category_id, profiles!videos_posted_by_fkey(username, avatar_url), categories(name, slug, owner_id)"
         )
         .order("boost_count", { ascending: false })
         .order("created_at", { ascending: false })

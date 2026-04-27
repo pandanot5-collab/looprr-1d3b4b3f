@@ -274,6 +274,7 @@ export type Database = {
           thumbnail_url: string | null
           title: string | null
           url: string
+          view_count: number
         }
         Insert: {
           boost_count?: number
@@ -290,6 +291,7 @@ export type Database = {
           thumbnail_url?: string | null
           title?: string | null
           url: string
+          view_count?: number
         }
         Update: {
           boost_count?: number
@@ -306,6 +308,7 @@ export type Database = {
           thumbnail_url?: string | null
           title?: string | null
           url?: string
+          view_count?: number
         }
         Relationships: [
           {
@@ -344,6 +347,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_video_view: { Args: { _video_id: string }; Returns: undefined }
       required_reports_for: { Args: { _likes: number }; Returns: number }
     }
     Enums: {

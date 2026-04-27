@@ -16,6 +16,7 @@ const UserProfile = () => {
   const [category, setCategory] = useState<any>(null);
   const [followers, setFollowers] = useState(0);
   const [following, setFollowing] = useState(0);
+  const [totalViews, setTotalViews] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -48,6 +49,12 @@ const UserProfile = () => {
       setFollowers(fCount ?? 0);
       setFollowing(gCount ?? 0);
       setIsFollowing(!!(followRes as any).data);
+
+      const { data: vids } = await supabase
+        .from("videos")
+        .select("view_count")
+        .eq("posted_by", p.id);
+      setTotalViews((vids ?? []).reduce((s: number, v: any) => s + (v.view_count ?? 0), 0));
     }
     setLoading(false);
   };
@@ -124,7 +131,8 @@ const UserProfile = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
+          <Stat label="Views" value={totalViews} />
           <Stat label="Followers" value={followers} />
           <Stat label="Following" value={following} />
         </div>

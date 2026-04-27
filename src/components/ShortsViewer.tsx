@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Heart, ThumbsDown, Zap, Flag, X, ExternalLink, AlertTriangle, Trash2 } from "lucide-react";
+import { Heart, ThumbsDown, Zap, Flag, X, ExternalLink, AlertTriangle, Trash2, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,6 +34,7 @@ interface Counts {
   like: number;
   dislike: number;
   boost: number;
+  views: number;
   reports: number;
   flagged: boolean;
 }
@@ -57,6 +58,7 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
           like: v.like_count,
           dislike: v.dislike_count,
           boost: v.boost_count,
+          views: (v as any).view_count ?? 0,
           reports: (v as any).report_count ?? 0,
           flagged: (v as any).flagged ?? false,
         },
@@ -96,6 +98,24 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Track views: register one view per video per session, after 1.5s on the active video
+  const viewedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    const v = videos[activeIndex];
+    if (!v) return;
+    if (viewedRef.current.has(v.id)) return;
+    const id = v.id;
+    const t = setTimeout(async () => {
+      if (viewedRef.current.has(id)) return;
+      viewedRef.current.add(id);
+      const { error } = await supabase.rpc("increment_video_view", { _video_id: id });
+      if (!error) {
+        setCounts((c) => ({ ...c, [id]: { ...c[id], views: (c[id]?.views ?? 0) + 1 } }));
+      }
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [activeIndex, videos]);
 
   // Load reactions/boosts/reports for user
   useEffect(() => {
@@ -337,6 +357,12 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
                     icon={<Zap className={cn("w-7 h-7", b && "fill-current text-yellow-400")} />}
                     label={c.boost}
                     onClick={() => handleBoost(v.id)}
+                  />
+                  <RailButton
+                    icon={<Eye className="w-6 h-6" />}
+                    label={c.views}
+                    onClick={() => {}}
+                    small
                   />
                   <RailButton
                     icon={<Flag className={cn("w-6 h-6", rep && "fill-current text-orange-400")} />}

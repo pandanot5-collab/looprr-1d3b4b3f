@@ -10,7 +10,7 @@ import { UsernameDisplay } from "@/components/UsernameDisplay";
 const Profile = () => {
   const { user, profile, loading, signOut } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ videos: 0, totalLikes: 0, totalBoosts: 0 });
+  const [stats, setStats] = useState({ videos: 0, totalLikes: 0, totalBoosts: 0, totalViews: 0 });
   const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 });
   const [category, setCategory] = useState<{ name: string; slug: string } | null>(null);
 
@@ -30,7 +30,7 @@ const Profile = () => {
 
     supabase
       .from("videos")
-      .select("like_count, boost_count")
+      .select("like_count, boost_count, view_count")
       .eq("posted_by", user.id)
       .then(({ data }) => {
         if (!data) return;
@@ -38,6 +38,7 @@ const Profile = () => {
           videos: data.length,
           totalLikes: data.reduce((s, v) => s + v.like_count, 0),
           totalBoosts: data.reduce((s, v) => s + v.boost_count, 0),
+          totalViews: data.reduce((s, v) => s + (v.view_count ?? 0), 0),
         });
       });
 
@@ -81,7 +82,8 @@ const Profile = () => {
           <Stat label="Likes" value={stats.totalLikes} />
           <Stat label="Boosts" value={stats.totalBoosts} />
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
+          <Stat label="Views" value={stats.totalViews} />
           <Stat label="Followers" value={followCounts.followers} />
           <Stat label="Following" value={followCounts.following} />
         </div>
