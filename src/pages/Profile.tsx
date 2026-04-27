@@ -4,8 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AppShell, Avatar } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
-import { Loader2, LogOut, ChevronRight } from "lucide-react";
+import { Loader2, LogOut, ChevronRight, Youtube, CheckCircle2 } from "lucide-react";
 import { UsernameDisplay } from "@/components/UsernameDisplay";
+import { refreshCreatorBadges, useCreatorBadges } from "@/hooks/useCreatorBadges";
+import { toast } from "sonner";
 
 const Profile = () => {
   const { user, profile, loading, signOut } = useAuth();
@@ -13,6 +15,47 @@ const Profile = () => {
   const [stats, setStats] = useState({ videos: 0, totalLikes: 0, totalBoosts: 0, totalViews: 0 });
   const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 });
   const [category, setCategory] = useState<{ name: string; slug: string } | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const badgesMap = useCreatorBadges();
+  const myBadges = (user && badgesMap.get(user.id)) || [];
+  const youtubeBadge = myBadges.find((b) => b.platform === "youtube");
+
+  const verifyYoutube = async () => {
+    if (!user) return;
+    setVerifying(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("youtube-verify-start");
+      if (error || !data?.url) throw new Error(error?.message ?? "Failed to start");
+      const popup = window.open(data.url, "yt-verify", "width=520,height=640");
+      if (!popup) throw new Error("Popup blocked. Please allow popups.");
+
+      const onMessage = (e: MessageEvent) => {
+        if (e.data?.type !== "youtube-verify") return;
+        window.removeEventListener("message", onMessage);
+        setVerifying(false);
+        const p = e.data.payload;
+        if (p?.ok) {
+          toast.success(`Verified! ${p.subs?.toLocaleString?.() ?? ""} subscribers.`);
+          refreshCreatorBadges();
+        } else {
+          toast.error(p?.error ?? "Verification failed");
+        }
+      };
+      window.addEventListener("message", onMessage);
+
+      // Cleanup if popup closed without finishing
+      const poll = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(poll);
+          window.removeEventListener("message", onMessage);
+          setVerifying(false);
+        }
+      }, 600);
+    } catch (e: any) {
+      setVerifying(false);
+      toast.error(e?.message ?? "Failed to verify");
+    }
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -110,6 +153,39 @@ const Profile = () => {
             Create your category to start posting →
           </Link>
         )}
+
+        {/* Creator verification */}
+        <div className="surface-elevated border border-border rounded-2xl p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                Creator verification
+              </span>
+              <p className="text-sm font-semibold flex items-center gap-2 mt-0.5">
+                <Youtube className="w-4 h-4" style={{ color: "hsl(0 100% 50%)" }} />
+                YouTube
+                {youtubeBadge && <CheckCircle2 className="w-4 h-4 text-accent" />}
+              </p>
+              {youtubeBadge ? (
+                <p className="text-xs text-muted-foreground mt-1 truncate">
+                  {youtubeBadge.handle} · {youtubeBadge.subscriber_count.toLocaleString()} subs
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Connect YouTube to earn the badge (100K+ subs)
+                </p>
+              )}
+            </div>
+            <Button
+              size="sm"
+              variant={youtubeBadge ? "outline" : "default"}
+              onClick={verifyYoutube}
+              disabled={verifying}
+            >
+              {verifying ? <Loader2 className="w-4 h-4 animate-spin" /> : youtubeBadge ? "Re-check" : "Connect"}
+            </Button>
+          </div>
+        </div>
 
         {/* Sign out */}
         <Button
