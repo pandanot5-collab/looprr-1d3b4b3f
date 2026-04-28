@@ -1,6 +1,7 @@
 import { Hammer, Youtube, Music2 } from "lucide-react";
 import { useAdminUsers } from "@/hooks/useAdminUsers";
 import { useCreatorBadges, type CreatorPlatform } from "@/hooks/useCreatorBadges";
+import { useCustomStyles } from "@/hooks/useCustomStyles";
 import { cn } from "@/lib/utils";
 import type { CSSProperties } from "react";
 
@@ -28,8 +29,10 @@ export const UsernameDisplay = ({
 }: Props) => {
   const admins = useAdminUsers();
   const badges = useCreatorBadges();
+  const customStyles = useCustomStyles();
   const isAdmin = !!userId && admins.has(userId);
   const userBadges = (userId && badges.get(userId)) || [];
+  const custom = (userId && customStyles.get(userId)) || null;
 
   const platforms = new Set<CreatorPlatform>(userBadges.map((b) => b.platform));
   const hasYoutube = platforms.has("youtube");
@@ -40,6 +43,7 @@ export const UsernameDisplay = ({
   if (isAdmin) stops.push(GRADIENTS.admin);
   if (hasYoutube) stops.push(GRADIENTS.youtube);
   if (hasTiktok) stops.push(GRADIENTS.tiktok);
+  if (custom?.gradient) stops.push(custom.gradient);
 
   const hasGradient = stops.length > 0;
   const style: CSSProperties | undefined = hasGradient
