@@ -342,7 +342,21 @@ const Category = () => {
           No videos in this category yet.
         </div>
       ) : (
-        <ShortsViewer videos={videos} inline />
+        <>
+          <div className="px-3 pt-2">
+            <PlatformFilter value={filter} onChange={setFilter} />
+          </div>
+          {(() => {
+            const visible = filter === "all" ? videos : videos.filter((v) => v.platform === filter);
+            return visible.length === 0 ? (
+              <div className="px-6 py-12 text-center text-sm text-muted-foreground">
+                No videos match this filter.
+              </div>
+            ) : (
+              <ShortsViewer videos={visible} inline />
+            );
+          })()}
+        </>
       )}
     </AppShell>
   );
