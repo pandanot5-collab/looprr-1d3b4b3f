@@ -285,13 +285,25 @@ const UserEditor = ({
     toast("User unbanned");
   };
 
-  const PRESETS: Array<{ label: string; value: string }> = [
-    { label: "Sunset", value: "hsl(20 100% 55%), hsl(330 100% 55%)" },
-    { label: "Ocean", value: "hsl(200 100% 55%), hsl(260 100% 60%)" },
-    { label: "Lime", value: "hsl(140 80% 50%), hsl(60 100% 55%)" },
-    { label: "Gold", value: "hsl(45 100% 55%), hsl(20 100% 50%)" },
-    { label: "Mono", value: "hsl(0 0% 90%), hsl(0 0% 30%)" },
+  const PRESETS: Array<{ label: string; stops: string[] }> = [
+    { label: "Sunset", stops: ["#ff6a00", "#ff007a"] },
+    { label: "Ocean", stops: ["#00b3ff", "#7a3dff"] },
+    { label: "Lime", stops: ["#1ed760", "#fff200"] },
+    { label: "Gold", stops: ["#ffc400", "#ff5500"] },
+    { label: "Mono", stops: ["#e6e6e6", "#4d4d4d"] },
+    { label: "Rainbow", stops: ["#ff0040", "#ffaa00", "#33ff66", "#00aaff", "#aa00ff"] },
   ];
+
+  const updateStop = (i: number, hex: string) =>
+    setStops((s) => s.map((c, idx) => (idx === i ? hex : c)));
+  const addStop = () =>
+    setStops((s) => (s.length === 0 ? ["#ff5500", "#ff007a"] : [...s, "#ffffff"]));
+  const removeStop = (i: number) =>
+    setStops((s) => s.filter((_, idx) => idx !== i));
+
+  const previewCss = stops.length >= 2
+    ? `linear-gradient(90deg, ${stops.join(", ")})`
+    : "transparent";
 
   return (
     <div className="surface-elevated border border-border rounded-2xl p-4 flex flex-col gap-4">
@@ -310,25 +322,72 @@ const UserEditor = ({
         <Button size="sm" variant="ghost" onClick={onClose}>Close</Button>
       </div>
 
-      {/* Custom gradient */}
-      <div className="flex flex-col gap-2">
+      {/* Custom gradient — visual color palette */}
+      <div className="flex flex-col gap-3">
         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
           Custom username gradient
         </label>
-        <Input
-          value={gradient}
-          onChange={(e) => setGradient(e.target.value)}
-          placeholder="e.g. hsl(0 100% 50%), hsl(40 100% 60%)"
-          className="font-mono text-xs"
-        />
+
+        {/* Color stops */}
+        <div className="flex flex-wrap items-center gap-2">
+          {stops.map((hex, i) => (
+            <div key={i} className="relative group">
+              <label
+                className="block w-10 h-10 rounded-full border-2 border-border cursor-pointer overflow-hidden shadow-sm hover:border-foreground transition-colors"
+                style={{ background: hex }}
+              >
+                <input
+                  type="color"
+                  value={hex}
+                  onChange={(e) => updateStop(i, e.target.value)}
+                  className="opacity-0 w-full h-full cursor-pointer"
+                />
+              </label>
+              {stops.length > 2 && (
+                <button
+                  onClick={() => removeStop(i)}
+                  className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="Remove color"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            onClick={addStop}
+            className="w-10 h-10 rounded-full border-2 border-dashed border-border hover:border-foreground flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Add color"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+          {stops.length > 0 && (
+            <button
+              onClick={() => setStops([])}
+              className="text-xs px-2.5 h-7 rounded-full border border-border hover:border-destructive text-muted-foreground ml-1"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        {/* Gradient strip preview */}
+        {stops.length >= 2 && (
+          <div
+            className="h-8 rounded-lg border border-border"
+            style={{ background: previewCss }}
+          />
+        )}
+
+        {/* Presets */}
         <div className="flex flex-wrap gap-1.5">
           {PRESETS.map((p) => (
             <button
               key={p.label}
-              onClick={() => setGradient(p.value)}
+              onClick={() => setStops(p.stops)}
               className="text-xs px-2.5 h-7 rounded-full border border-border hover:border-foreground transition-colors"
               style={{
-                backgroundImage: `linear-gradient(90deg, ${p.value})`,
+                backgroundImage: `linear-gradient(90deg, ${p.stops.join(", ")})`,
                 color: "white",
                 textShadow: "0 1px 2px rgba(0,0,0,0.5)",
               }}
@@ -336,15 +395,9 @@ const UserEditor = ({
               {p.label}
             </button>
           ))}
-          {gradient && (
-            <button
-              onClick={() => setGradient("")}
-              className="text-xs px-2.5 h-7 rounded-full border border-border hover:border-destructive text-muted-foreground"
-            >
-              Clear
-            </button>
-          )}
         </div>
+
+        {/* Username preview */}
         {gradient && (
           <div className="text-2xl font-bold text-gradient-stack" style={{ ["--grad" as any]: gradient }}>
             @{profile.username}
