@@ -104,11 +104,13 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Track views: register one view per video per session, after 1.5s on the active video
+  // Track views + on-view health check
   const viewedRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     const v = videos[activeIndex];
     if (!v) return;
+    // Fire-and-forget health probe
+    if (v.external_id) checkAndMarkOnView(v.id, v.platform, v.url);
     if (viewedRef.current.has(v.id)) return;
     const id = v.id;
     const t = setTimeout(async () => {
@@ -121,6 +123,25 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
     }, 1500);
     return () => clearTimeout(t);
   }, [activeIndex, videos]);
+
+  // Load comment counts for visible videos
+  useEffect(() => {
+    const ids = videos.map((v) => v.id);
+    if (ids.length === 0) return;
+    (async () => {
+      const counts: Record<string, number> = {};
+      await Promise.all(
+        ids.map(async (id) => {
+          const { count } = await supabase
+            .from("video_comments")
+            .select("*", { count: "exact", head: true })
+            .eq("video_id", id);
+          counts[id] = count ?? 0;
+        }),
+      );
+      setCommentCounts(counts);
+    })();
+  }, [videos]);
 
   // Load reactions/boosts/reports for user
   useEffect(() => {
