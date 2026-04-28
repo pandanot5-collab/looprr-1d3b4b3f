@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Search, Ban, ShieldCheck, Upload, Trash2, Save, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { UsernameDisplay } from "@/components/UsernameDisplay";
+import { refreshCustomStyles } from "@/hooks/useCustomStyles";
 
 interface AdminProfile {
   id: string;
@@ -167,6 +168,7 @@ const UserEditor = ({
       return;
     }
     onChanged(data as any);
+    refreshCustomStyles();
     toast("Saved");
   };
 
