@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AppShell, Avatar } from "@/components/AppShell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, Ban, ShieldCheck, Upload, Trash2, Save, RefreshCw } from "lucide-react";
+import { Loader2, Search, Ban, ShieldCheck, Upload, Trash2, Save, RefreshCw, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { UsernameDisplay } from "@/components/UsernameDisplay";
 import { refreshCustomStyles } from "@/hooks/useCustomStyles";
