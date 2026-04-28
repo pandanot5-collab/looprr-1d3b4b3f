@@ -75,6 +75,8 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
   const [reportReason, setReportReason] = useState("");
   const [reportTarget, setReportTarget] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [commentsTarget, setCommentsTarget] = useState<FeedVideo | null>(null);
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
 
   // Scroll to start index on mount
   useEffect(() => {
