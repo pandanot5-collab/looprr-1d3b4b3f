@@ -458,6 +458,23 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Sheet open={!!commentsTarget} onOpenChange={(o) => !o && setCommentsTarget(null)}>
+        <SheetContent side="bottom" className="h-[80vh] flex flex-col">
+          <SheetHeader>
+            <SheetTitle>Comments</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 overflow-y-auto pt-3">
+            {commentsTarget && (
+              <Comments
+                videoId={commentsTarget.id}
+                videoOwnerId={commentsTarget.posted_by}
+                categoryOwnerId={commentsTarget.categories?.owner_id}
+              />
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
