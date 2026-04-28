@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Heart, ThumbsDown, Zap, Flag, X, ExternalLink, AlertTriangle, Trash2, Eye } from "lucide-react";
+import { Heart, ThumbsDown, Zap, Flag, X, ExternalLink, AlertTriangle, Trash2, Eye, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,6 +8,7 @@ import { UsernameDisplay } from "@/components/UsernameDisplay";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +23,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { FeedVideo } from "@/components/VideoCard";
 import { TikTokEmbed } from "@/components/TikTokEmbed";
+import { Comments } from "@/components/Comments";
+import { checkAndMarkOnView } from "@/lib/video-health";
 
 interface Props {
   videos: FeedVideo[];
@@ -72,6 +75,8 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
   const [reportReason, setReportReason] = useState("");
   const [reportTarget, setReportTarget] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [commentsTarget, setCommentsTarget] = useState<FeedVideo | null>(null);
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
 
   // Scroll to start index on mount
   useEffect(() => {
@@ -99,11 +104,13 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
     return () => el.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Track views: register one view per video per session, after 1.5s on the active video
+  // Track views + on-view health check
   const viewedRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     const v = videos[activeIndex];
     if (!v) return;
+    // Fire-and-forget health probe
+    if (v.external_id) checkAndMarkOnView(v.id, v.platform, v.url);
     if (viewedRef.current.has(v.id)) return;
     const id = v.id;
     const t = setTimeout(async () => {
@@ -116,6 +123,25 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
     }, 1500);
     return () => clearTimeout(t);
   }, [activeIndex, videos]);
+
+  // Load comment counts for visible videos
+  useEffect(() => {
+    const ids = videos.map((v) => v.id);
+    if (ids.length === 0) return;
+    (async () => {
+      const counts: Record<string, number> = {};
+      await Promise.all(
+        ids.map(async (id) => {
+          const { count } = await supabase
+            .from("video_comments")
+            .select("*", { count: "exact", head: true })
+            .eq("video_id", id);
+          counts[id] = count ?? 0;
+        }),
+      );
+      setCommentCounts(counts);
+    })();
+  }, [videos]);
 
   // Load reactions/boosts/reports for user
   useEffect(() => {
@@ -359,6 +385,11 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
                     onClick={() => handleBoost(v.id)}
                   />
                   <RailButton
+                    icon={<MessageCircle className="w-7 h-7" />}
+                    label={commentCounts[v.id] ?? 0}
+                    onClick={() => setCommentsTarget(v)}
+                  />
+                  <RailButton
                     icon={<Eye className="w-6 h-6" />}
                     label={c.views}
                     onClick={() => {}}
@@ -427,6 +458,23 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Sheet open={!!commentsTarget} onOpenChange={(o) => !o && setCommentsTarget(null)}>
+        <SheetContent side="bottom" className="h-[80vh] flex flex-col">
+          <SheetHeader>
+            <SheetTitle>Comments</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 overflow-y-auto pt-3">
+            {commentsTarget && (
+              <Comments
+                videoId={commentsTarget.id}
+                videoOwnerId={commentsTarget.posted_by}
+                categoryOwnerId={commentsTarget.categories?.owner_id}
+              />
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };

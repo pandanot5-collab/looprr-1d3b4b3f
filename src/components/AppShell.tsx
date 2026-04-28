@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Compass, Plus, Search, User, Sun, Moon, Crown } from "lucide-react";
+import { Compass, Plus, Search, User, Sun, Moon, Crown, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { UsernameDisplay } from "@/components/UsernameDisplay";
@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const { theme, toggle } = useTheme();
 
   const navItems = [
@@ -29,6 +29,15 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
             <span className="font-semibold text-lg tracking-tight">loopr</span>
           </Link>
           <div className="flex items-center gap-1">
+            {isAdmin && (
+              <Link
+                to="/admin"
+                aria-label="Admin"
+                className="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-accent"
+              >
+                <ShieldCheck className="w-4 h-4" />
+              </Link>
+            )}
             <button
               onClick={toggle}
               aria-label="Toggle theme"

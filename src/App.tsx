@@ -13,6 +13,7 @@ import Post from "./pages/Post";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
 import Subscribe from "./pages/Subscribe";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
               <Route path="/u/:username" element={<UserProfile />} />
               <Route path="/subscribe" element={<Subscribe />} />
+              <Route path="/admin" element={<Admin />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

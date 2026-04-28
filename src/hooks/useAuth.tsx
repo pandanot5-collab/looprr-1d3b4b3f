@@ -10,6 +10,7 @@ interface Profile {
   avatar_url: string | null;
   is_subscriber: boolean;
   subscription_tier: SubscriptionTier;
+  banned?: boolean;
 }
 
 export const CATEGORY_LIMITS: Record<SubscriptionTier, number> = {
@@ -41,10 +42,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, avatar_url, is_subscriber, subscription_tier")
+      .select("id, username, avatar_url, is_subscriber, subscription_tier, banned")
       .eq("id", userId)
       .maybeSingle();
-    setProfile(data as Profile | null);
+    const p = data as Profile | null;
+    if (p?.banned) {
+      // Force sign-out for banned users
+      await supabase.auth.signOut();
+      setProfile(null);
+      setIsAdmin(false);
+      return;
+    }
+    setProfile(p);
 
     const { data: roleData } = await supabase
       .from("user_roles")

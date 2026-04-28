@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +18,7 @@ import {
   Settings,
 } from "lucide-react";
 import { UsernameDisplay } from "@/components/UsernameDisplay";
+import { PlatformFilter, type PlatformFilterValue } from "@/components/PlatformFilter";
 
 interface Collaborator {
   id: string;
@@ -38,7 +39,7 @@ const Category = () => {
   const [collabUsername, setCollabUsername] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
-  
+  const [filter, setFilter] = useState<PlatformFilterValue>("all");
 
   const isOwner = user && category && user.id === category.owner_id;
 
@@ -57,12 +58,14 @@ const Category = () => {
       const { data: vids } = await supabase
         .from("videos")
         .select(
-          "id, url, platform, external_id, title, thumbnail_url, like_count, dislike_count, boost_count, view_count, report_count, flagged, created_at, posted_by, category_id, profiles!videos_posted_by_fkey(username, avatar_url), categories(name, slug, owner_id)",
+          "id, url, platform, external_id, title, thumbnail_url, like_count, dislike_count, boost_count, view_count, report_count, flagged, created_at, posted_by, category_id, profiles!videos_posted_by_fkey(username, avatar_url, banned), categories(name, slug, owner_id)",
         )
         .eq("category_id", cat.id)
+        .eq("dead", false)
         .order("boost_count", { ascending: false })
         .order("created_at", { ascending: false });
-      setVideos((vids as any) ?? []);
+      const filtered = (vids ?? []).filter((v: any) => !v.profiles?.banned);
+      setVideos(filtered as any);
     }
     setLoading(false);
   };
@@ -339,7 +342,21 @@ const Category = () => {
           No videos in this category yet.
         </div>
       ) : (
-        <ShortsViewer videos={videos} inline />
+        <>
+          <div className="px-3 pt-2">
+            <PlatformFilter value={filter} onChange={setFilter} />
+          </div>
+          {(() => {
+            const visible = filter === "all" ? videos : videos.filter((v) => v.platform === filter);
+            return visible.length === 0 ? (
+              <div className="px-6 py-12 text-center text-sm text-muted-foreground">
+                No videos match this filter.
+              </div>
+            ) : (
+              <ShortsViewer videos={visible} inline />
+            );
+          })()}
+        </>
       )}
     </AppShell>
   );
