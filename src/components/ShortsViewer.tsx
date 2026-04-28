@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Heart, ThumbsDown, Zap, Flag, X, ExternalLink, AlertTriangle, Trash2, Eye } from "lucide-react";
+import { Heart, ThumbsDown, Zap, Flag, X, ExternalLink, AlertTriangle, Trash2, Eye, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,6 +8,7 @@ import { UsernameDisplay } from "@/components/UsernameDisplay";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +23,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { FeedVideo } from "@/components/VideoCard";
 import { TikTokEmbed } from "@/components/TikTokEmbed";
+import { Comments } from "@/components/Comments";
+import { checkAndMarkOnView } from "@/lib/video-health";
 
 interface Props {
   videos: FeedVideo[];
