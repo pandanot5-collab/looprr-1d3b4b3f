@@ -79,6 +79,14 @@ export const UsernameDisplay = ({
           aria-label="Verified TikTok creator"
         />
       )}
+      {custom?.iconUrl && (
+        <img
+          src={custom.iconUrl}
+          alt=""
+          className="shrink-0 object-contain"
+          style={{ width: iconSize, height: iconSize }}
+        />
+      )}
     </span>
   );
 };
