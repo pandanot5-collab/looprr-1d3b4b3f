@@ -200,15 +200,21 @@ const UserEditor = ({
   onChanged: (p: AdminProfile) => void;
 }) => {
   const fileRef = useRef<HTMLInputElement>(null);
-  const [gradient, setGradient] = useState(profile.custom_gradient ?? "");
+  const [stops, setStops] = useState<string[]>(() => {
+    const parsed = parseGradientToHexStops(profile.custom_gradient ?? "");
+    return parsed.length >= 2 ? parsed : [];
+  });
   const [iconUrl, setIconUrl] = useState(profile.custom_icon_url ?? "");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    setGradient(profile.custom_gradient ?? "");
+    const parsed = parseGradientToHexStops(profile.custom_gradient ?? "");
+    setStops(parsed.length >= 2 ? parsed : []);
     setIconUrl(profile.custom_icon_url ?? "");
   }, [profile.id]);
+
+  const gradient = stops.length >= 2 ? stopsToGradient(stops) : "";
 
   const save = async () => {
     setBusy(true);
