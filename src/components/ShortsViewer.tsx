@@ -385,6 +385,11 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
                     onClick={() => handleBoost(v.id)}
                   />
                   <RailButton
+                    icon={<MessageCircle className="w-7 h-7" />}
+                    label={commentCounts[v.id] ?? 0}
+                    onClick={() => setCommentsTarget(v)}
+                  />
+                  <RailButton
                     icon={<Eye className="w-6 h-6" />}
                     label={c.views}
                     onClick={() => {}}
