@@ -144,7 +144,10 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          banned: boolean
           created_at: string
+          custom_gradient: string | null
+          custom_icon_url: string | null
           id: string
           is_subscriber: boolean
           subscription_tier: Database["public"]["Enums"]["subscription_tier"]
@@ -153,7 +156,10 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          banned?: boolean
           created_at?: string
+          custom_gradient?: string | null
+          custom_icon_url?: string | null
           id: string
           is_subscriber?: boolean
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
@@ -162,7 +168,10 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          banned?: boolean
           created_at?: string
+          custom_gradient?: string | null
+          custom_icon_url?: string | null
           id?: string
           is_subscriber?: boolean
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
@@ -224,6 +233,38 @@ export type Database = {
           },
           {
             foreignKeyName: "video_boosts_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_comments: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          user_id: string
+          video_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          user_id: string
+          video_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_comments_video_id_fkey"
             columns: ["video_id"]
             isOneToOne: false
             referencedRelation: "videos"
@@ -299,10 +340,12 @@ export type Database = {
           boost_count: number
           category_id: string
           created_at: string
+          dead: boolean
           dislike_count: number
           external_id: string | null
           flagged: boolean
           id: string
+          last_checked_at: string | null
           like_count: number
           platform: Database["public"]["Enums"]["video_platform"]
           posted_by: string
@@ -316,10 +359,12 @@ export type Database = {
           boost_count?: number
           category_id: string
           created_at?: string
+          dead?: boolean
           dislike_count?: number
           external_id?: string | null
           flagged?: boolean
           id?: string
+          last_checked_at?: string | null
           like_count?: number
           platform: Database["public"]["Enums"]["video_platform"]
           posted_by: string
@@ -333,10 +378,12 @@ export type Database = {
           boost_count?: number
           category_id?: string
           created_at?: string
+          dead?: boolean
           dislike_count?: number
           external_id?: string | null
           flagged?: boolean
           id?: string
+          last_checked_at?: string | null
           like_count?: number
           platform?: Database["public"]["Enums"]["video_platform"]
           posted_by?: string
@@ -368,6 +415,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_ban_user: { Args: { _user_id: string }; Returns: undefined }
+      admin_unban_user: { Args: { _user_id: string }; Returns: undefined }
       can_post_to_category: {
         Args: { _category_id: string; _user_id: string }
         Returns: boolean
@@ -384,6 +433,8 @@ export type Database = {
         Returns: boolean
       }
       increment_video_view: { Args: { _video_id: string }; Returns: undefined }
+      mark_video_alive: { Args: { _video_id: string }; Returns: undefined }
+      mark_video_dead: { Args: { _video_id: string }; Returns: undefined }
       required_reports_for: { Args: { _likes: number }; Returns: number }
     }
     Enums: {
