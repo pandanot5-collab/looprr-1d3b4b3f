@@ -1,9 +1,22 @@
-import { Hammer, Youtube, Music2 } from "lucide-react";
+import { Hammer, Youtube, Music2, Crown, Star, Gem } from "lucide-react";
 import { useAdminUsers } from "@/hooks/useAdminUsers";
 import { useCreatorBadges, type CreatorPlatform } from "@/hooks/useCreatorBadges";
 import { useCustomStyles } from "@/hooks/useCustomStyles";
+import { useTierStyles, type SubTier } from "@/hooks/useTierStyles";
 import { cn } from "@/lib/utils";
 import type { CSSProperties } from "react";
+
+const TIER_ICONS = {
+  starter: Star,
+  pro: Gem,
+  elite: Crown,
+} as const;
+
+const TIER_LABEL = {
+  starter: "Starter member",
+  pro: "Pro member",
+  elite: "Elite member",
+} as const;
 
 interface Props {
   userId: string | null | undefined;
@@ -30,9 +43,12 @@ export const UsernameDisplay = ({
   const admins = useAdminUsers();
   const badges = useCreatorBadges();
   const customStyles = useCustomStyles();
+  const { getTierInfo } = useTierStyles();
   const isAdmin = !!userId && admins.has(userId);
   const userBadges = (userId && badges.get(userId)) || [];
   const custom = (userId && customStyles.get(userId)) || null;
+  const tierInfo = getTierInfo(userId);
+  const TierIcon = tierInfo.tier !== "free" ? TIER_ICONS[tierInfo.tier] : null;
 
   const platforms = new Set<CreatorPlatform>(userBadges.map((b) => b.platform));
   const hasYoutube = platforms.has("youtube");
@@ -89,6 +105,18 @@ export const UsernameDisplay = ({
           alt=""
           className="shrink-0 object-contain"
           style={{ width: iconSize, height: iconSize }}
+        />
+      )}
+      {TierIcon && tierInfo.color && (
+        <TierIcon
+          className="shrink-0"
+          style={{
+            width: iconSize,
+            height: iconSize,
+            color: `hsl(${tierInfo.color})`,
+            filter: `drop-shadow(0 0 4px hsl(${tierInfo.color} / 0.6))`,
+          }}
+          aria-label={TIER_LABEL[tierInfo.tier as keyof typeof TIER_LABEL]}
         />
       )}
     </span>

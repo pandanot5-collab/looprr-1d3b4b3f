@@ -5,10 +5,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { AppShell, Avatar } from "@/components/AppShell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, Ban, ShieldCheck, Upload, Trash2, Save, RefreshCw, Plus, X } from "lucide-react";
+import { Loader2, Search, Ban, ShieldCheck, Upload, Trash2, Save, RefreshCw, Plus, X, Palette } from "lucide-react";
 import { toast } from "sonner";
 import { UsernameDisplay } from "@/components/UsernameDisplay";
 import { refreshCustomStyles } from "@/hooks/useCustomStyles";
+import { refreshTierStyles, type SubTier } from "@/hooks/useTierStyles";
+
+
 
 interface AdminProfile {
   id: string;
@@ -17,6 +20,8 @@ interface AdminProfile {
   custom_gradient: string | null;
   custom_icon_url: string | null;
   banned: boolean;
+  subscription_tier: SubTier;
+  tier_color_override: string | null;
 }
 
 const Admin = () => {
@@ -40,7 +45,7 @@ const Admin = () => {
     setSearching(true);
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, avatar_url, custom_gradient, custom_icon_url, banned")
+      .select("id, username, avatar_url, custom_gradient, custom_icon_url, banned, subscription_tier, tier_color_override")
       .ilike("username", `%${q}%`)
       .limit(25);
     setResults((data as any) ?? []);
@@ -73,9 +78,11 @@ const Admin = () => {
             <ShieldCheck className="w-6 h-6 text-accent" /> Admin
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Manage users, custom gradients, icons, and bans.
+            Manage users, custom gradients, icons, tier colors, and bans.
           </p>
         </div>
+
+        <TierColorEditor />
 
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
@@ -190,6 +197,17 @@ const parseGradientToHexStops = (grad: string): string[] => {
 const stopsToGradient = (stops: string[]): string =>
   stops.map(hexToHsl).join(", ");
 
+// Convert HSL string "H S% L%" (no wrapper) <-> hex
+const hslTripletToHex = (hsl: string | null): string => {
+  if (!hsl) return "#888888";
+  return hslStringToHex(`hsl(${hsl})`);
+};
+const hexToHslTriplet = (hex: string): string => {
+  const wrapped = hexToHsl(hex); // "hsl(H S% L%)"
+  const m = wrapped.match(/hsl\(\s*(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%\s*\)/i);
+  return m ? `${m[1]} ${m[2]}% ${m[3]}%` : "0 0% 50%";
+};
+
 const UserEditor = ({
   profile,
   onClose,
@@ -205,6 +223,8 @@ const UserEditor = ({
     return parsed.length >= 2 ? parsed : [];
   });
   const [iconUrl, setIconUrl] = useState(profile.custom_icon_url ?? "");
+  const [tierOverride, setTierOverride] = useState<string | null>(profile.tier_color_override ?? null);
+  const tier: SubTier = profile.subscription_tier ?? "free";
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -212,6 +232,7 @@ const UserEditor = ({
     const parsed = parseGradientToHexStops(profile.custom_gradient ?? "");
     setStops(parsed.length >= 2 ? parsed : []);
     setIconUrl(profile.custom_icon_url ?? "");
+    setTierOverride(profile.tier_color_override ?? null);
   }, [profile.id]);
 
   const gradient = stops.length >= 2 ? stopsToGradient(stops) : "";
@@ -223,9 +244,10 @@ const UserEditor = ({
       .update({
         custom_gradient: gradient.trim() || null,
         custom_icon_url: iconUrl.trim() || null,
-      })
+        tier_color_override: tierOverride,
+      } as any)
       .eq("id", profile.id)
-      .select("id, username, avatar_url, custom_gradient, custom_icon_url, banned")
+      .select("id, username, avatar_url, custom_gradient, custom_icon_url, banned, subscription_tier, tier_color_override")
       .single();
     setBusy(false);
     if (error) {
@@ -234,6 +256,7 @@ const UserEditor = ({
     }
     onChanged(data as any);
     refreshCustomStyles();
+    refreshTierStyles();
     toast("Saved");
   };
 
@@ -405,6 +428,40 @@ const UserEditor = ({
         )}
       </div>
 
+      {/* Tier color override */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <Palette className="w-3.5 h-3.5" /> Tier color override
+        </label>
+        <p className="text-[11px] text-muted-foreground -mt-1">
+          Current tier: <span className="font-mono uppercase">{tier}</span>
+          {tier === "free" && " — free users have no tier color"}
+        </p>
+        {tier !== "free" && (
+          <div className="flex items-center gap-3">
+            <label
+              className="block w-10 h-10 rounded-full border-2 border-border cursor-pointer overflow-hidden shadow-sm hover:border-foreground transition-colors"
+              style={{ background: tierOverride ? `hsl(${tierOverride})` : "transparent" }}
+            >
+              <input
+                type="color"
+                value={hslTripletToHex(tierOverride)}
+                onChange={(e) => setTierOverride(hexToHslTriplet(e.target.value))}
+                className="opacity-0 w-full h-full cursor-pointer"
+              />
+            </label>
+            {tierOverride && (
+              <Button size="sm" variant="ghost" onClick={() => setTierOverride(null)}>
+                <Trash2 className="w-4 h-4 mr-1" /> Use global
+              </Button>
+            )}
+            <span className="text-[11px] text-muted-foreground">
+              {tierOverride ? "Custom" : "Using global tier color"}
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* Custom icon */}
       <div className="flex flex-col gap-2">
         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -451,6 +508,102 @@ const UserEditor = ({
             <Ban className="w-4 h-4 mr-1.5" /> Ban
           </Button>
         )}
+      </div>
+    </div>
+  );
+};
+
+// ---------- Global tier color editor ----------
+const TIER_META: Record<SubTier, { label: string; defaultColor: string }> = {
+  free:    { label: "Free",    defaultColor: "0 0% 50%" },
+  starter: { label: "Starter", defaultColor: "200 90% 55%" },
+  pro:     { label: "Pro",     defaultColor: "280 90% 60%" },
+  elite:   { label: "Elite",   defaultColor: "45 100% 55%" },
+};
+
+const TierColorEditor = () => {
+  const [colors, setColors] = useState<Record<SubTier, string>>({
+    free: TIER_META.free.defaultColor,
+    starter: TIER_META.starter.defaultColor,
+    pro: TIER_META.pro.defaultColor,
+    elite: TIER_META.elite.defaultColor,
+  });
+  const [loading, setLoading] = useState(true);
+  const [savingTier, setSavingTier] = useState<SubTier | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("tier_colors")
+      .select("tier, color")
+      .then(({ data }) => {
+        if (data) {
+          setColors((prev) => {
+            const next = { ...prev };
+            (data as any[]).forEach((r) => {
+              if (r?.tier && r?.color) next[r.tier as SubTier] = r.color;
+            });
+            return next;
+          });
+        }
+        setLoading(false);
+      });
+  }, []);
+
+  const update = async (t: SubTier, hex: string) => {
+    const triplet = hexToHslTriplet(hex);
+    setColors((c) => ({ ...c, [t]: triplet }));
+    setSavingTier(t);
+    const { error } = await supabase
+      .from("tier_colors")
+      .upsert({ tier: t, color: triplet, updated_at: new Date().toISOString() } as any);
+    setSavingTier(null);
+    if (error) {
+      toast("Couldn't save tier color", { description: error.message });
+      return;
+    }
+    refreshTierStyles();
+  };
+
+  return (
+    <div className="surface-elevated border border-border rounded-2xl p-4 flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <Palette className="w-4 h-4 text-accent" />
+        <h2 className="text-sm font-semibold">Global tier colors</h2>
+        {loading && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground ml-auto" />}
+      </div>
+      <p className="text-[11px] text-muted-foreground -mt-1">
+        Default border + glow color for each subscription tier. Per-user overrides take precedence.
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        {(["starter", "pro", "elite", "free"] as SubTier[]).map((t) => (
+          <div
+            key={t}
+            className="flex items-center gap-3 rounded-xl border border-border p-2.5"
+            style={{
+              background: `linear-gradient(135deg, hsl(${colors[t]} / 0.12), transparent 70%)`,
+            }}
+          >
+            <label
+              className="block w-9 h-9 rounded-full border-2 border-border cursor-pointer overflow-hidden shadow-sm"
+              style={{ background: `hsl(${colors[t]})` }}
+            >
+              <input
+                type="color"
+                value={hslTripletToHex(colors[t])}
+                onChange={(e) => update(t, e.target.value)}
+                className="opacity-0 w-full h-full cursor-pointer"
+              />
+            </label>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider">
+                {TIER_META[t].label}
+              </p>
+              <p className="text-[10px] font-mono text-muted-foreground truncate">
+                {savingTier === t ? "saving…" : colors[t]}
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

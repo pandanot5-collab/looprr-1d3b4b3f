@@ -151,6 +151,7 @@ export type Database = {
           id: string
           is_subscriber: boolean
           subscription_tier: Database["public"]["Enums"]["subscription_tier"]
+          tier_color_override: string | null
           updated_at: string
           username: string
         }
@@ -163,6 +164,7 @@ export type Database = {
           id: string
           is_subscriber?: boolean
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
+          tier_color_override?: string | null
           updated_at?: string
           username: string
         }
@@ -175,8 +177,27 @@ export type Database = {
           id?: string
           is_subscriber?: boolean
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
+          tier_color_override?: string | null
           updated_at?: string
           username?: string
+        }
+        Relationships: []
+      }
+      tier_colors: {
+        Row: {
+          color: string
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at: string
+        }
+        Insert: {
+          color: string
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
         }
         Relationships: []
       }
