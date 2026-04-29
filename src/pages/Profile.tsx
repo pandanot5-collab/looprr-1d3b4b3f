@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, LogOut, ChevronRight, Youtube, CheckCircle2 } from "lucide-react";
 import { UsernameDisplay } from "@/components/UsernameDisplay";
 import { refreshCreatorBadges, useCreatorBadges } from "@/hooks/useCreatorBadges";
+import { useTierStyles } from "@/hooks/useTierStyles";
 import { toast } from "sonner";
 
 const Profile = () => {
