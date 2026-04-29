@@ -5,10 +5,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { AppShell, Avatar } from "@/components/AppShell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, Ban, ShieldCheck, Upload, Trash2, Save, RefreshCw, Plus, X } from "lucide-react";
+import { Loader2, Search, Ban, ShieldCheck, Upload, Trash2, Save, RefreshCw, Plus, X, Palette } from "lucide-react";
 import { toast } from "sonner";
 import { UsernameDisplay } from "@/components/UsernameDisplay";
 import { refreshCustomStyles } from "@/hooks/useCustomStyles";
+import { refreshTierStyles, type SubTier } from "@/hooks/useTierStyles";
+
+const TIERS: SubTier[] = ["free", "starter", "pro", "elite"];
 
 interface AdminProfile {
   id: string;
@@ -17,6 +20,8 @@ interface AdminProfile {
   custom_gradient: string | null;
   custom_icon_url: string | null;
   banned: boolean;
+  subscription_tier: SubTier;
+  tier_color_override: string | null;
 }
 
 const Admin = () => {
