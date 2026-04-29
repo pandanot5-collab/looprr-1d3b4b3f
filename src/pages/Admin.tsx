@@ -224,7 +224,7 @@ const UserEditor = ({
   });
   const [iconUrl, setIconUrl] = useState(profile.custom_icon_url ?? "");
   const [tierOverride, setTierOverride] = useState<string | null>(profile.tier_color_override ?? null);
-  const [tier, setTier] = useState<SubTier>(profile.subscription_tier ?? "free");
+  const tier: SubTier = profile.subscription_tier ?? "free";
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
 
