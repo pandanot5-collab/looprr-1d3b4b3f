@@ -29,7 +29,7 @@ const UserProfile = () => {
     setLoading(true);
     const { data: p } = await supabase
       .from("profiles")
-      .select("id, username, avatar_url, is_subscriber")
+      .select("id, username, avatar_url, is_subscriber, subscription_tier")
       .eq("username", username)
       .maybeSingle();
     setProfile(p);
