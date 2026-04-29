@@ -1,9 +1,22 @@
-import { Hammer, Youtube, Music2 } from "lucide-react";
+import { Hammer, Youtube, Music2, Crown, Star, Gem } from "lucide-react";
 import { useAdminUsers } from "@/hooks/useAdminUsers";
 import { useCreatorBadges, type CreatorPlatform } from "@/hooks/useCreatorBadges";
 import { useCustomStyles } from "@/hooks/useCustomStyles";
+import { useTierStyles, type SubTier } from "@/hooks/useTierStyles";
 import { cn } from "@/lib/utils";
 import type { CSSProperties } from "react";
+
+const TIER_ICONS = {
+  starter: Star,
+  pro: Gem,
+  elite: Crown,
+} as const;
+
+const TIER_LABEL = {
+  starter: "Starter member",
+  pro: "Pro member",
+  elite: "Elite member",
+} as const;
 
 interface Props {
   userId: string | null | undefined;
