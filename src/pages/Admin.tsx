@@ -197,6 +197,17 @@ const parseGradientToHexStops = (grad: string): string[] => {
 const stopsToGradient = (stops: string[]): string =>
   stops.map(hexToHsl).join(", ");
 
+// Convert HSL string "H S% L%" (no wrapper) <-> hex
+const hslTripletToHex = (hsl: string | null): string => {
+  if (!hsl) return "#888888";
+  return hslStringToHex(`hsl(${hsl})`);
+};
+const hexToHslTriplet = (hex: string): string => {
+  const wrapped = hexToHsl(hex); // "hsl(H S% L%)"
+  const m = wrapped.match(/hsl\(\s*(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%\s*\)/i);
+  return m ? `${m[1]} ${m[2]}% ${m[3]}%` : "0 0% 50%";
+};
+
 const UserEditor = ({
   profile,
   onClose,
