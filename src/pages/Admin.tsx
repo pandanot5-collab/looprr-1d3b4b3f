@@ -45,7 +45,7 @@ const Admin = () => {
     setSearching(true);
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, avatar_url, custom_gradient, custom_icon_url, banned")
+      .select("id, username, avatar_url, custom_gradient, custom_icon_url, banned, subscription_tier, tier_color_override")
       .ilike("username", `%${q}%`)
       .limit(25);
     setResults((data as any) ?? []);
