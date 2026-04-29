@@ -43,9 +43,12 @@ export const UsernameDisplay = ({
   const admins = useAdminUsers();
   const badges = useCreatorBadges();
   const customStyles = useCustomStyles();
+  const { getTierInfo } = useTierStyles();
   const isAdmin = !!userId && admins.has(userId);
   const userBadges = (userId && badges.get(userId)) || [];
   const custom = (userId && customStyles.get(userId)) || null;
+  const tierInfo = getTierInfo(userId);
+  const TierIcon = tierInfo.tier !== "free" ? TIER_ICONS[tierInfo.tier] : null;
 
   const platforms = new Set<CreatorPlatform>(userBadges.map((b) => b.platform));
   const hasYoutube = platforms.has("youtube");
