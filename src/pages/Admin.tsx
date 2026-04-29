@@ -233,7 +233,6 @@ const UserEditor = ({
     setStops(parsed.length >= 2 ? parsed : []);
     setIconUrl(profile.custom_icon_url ?? "");
     setTierOverride(profile.tier_color_override ?? null);
-    setTier(profile.subscription_tier ?? "free");
   }, [profile.id]);
 
   const gradient = stops.length >= 2 ? stopsToGradient(stops) : "";
