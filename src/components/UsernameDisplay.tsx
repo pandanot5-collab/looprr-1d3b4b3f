@@ -38,12 +38,16 @@ export const UsernameDisplay = ({
   const hasYoutube = platforms.has("youtube");
   const hasTiktok = platforms.has("tiktok");
 
-  // Stack every gradient the user has earned
+  // Custom gradient (set by admin) overrides all earned gradients.
+  // Otherwise, stack every gradient the user has earned.
   const stops: string[] = [];
-  if (isAdmin) stops.push(GRADIENTS.admin);
-  if (hasYoutube) stops.push(GRADIENTS.youtube);
-  if (hasTiktok) stops.push(GRADIENTS.tiktok);
-  if (custom?.gradient) stops.push(custom.gradient);
+  if (custom?.gradient) {
+    stops.push(custom.gradient);
+  } else {
+    if (isAdmin) stops.push(GRADIENTS.admin);
+    if (hasYoutube) stops.push(GRADIENTS.youtube);
+    if (hasTiktok) stops.push(GRADIENTS.tiktok);
+  }
 
   const hasGradient = stops.length > 0;
   const style: CSSProperties | undefined = hasGradient
