@@ -223,6 +223,8 @@ const UserEditor = ({
     return parsed.length >= 2 ? parsed : [];
   });
   const [iconUrl, setIconUrl] = useState(profile.custom_icon_url ?? "");
+  const [tierOverride, setTierOverride] = useState<string | null>(profile.tier_color_override ?? null);
+  const [tier, setTier] = useState<SubTier>(profile.subscription_tier ?? "free");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -230,6 +232,8 @@ const UserEditor = ({
     const parsed = parseGradientToHexStops(profile.custom_gradient ?? "");
     setStops(parsed.length >= 2 ? parsed : []);
     setIconUrl(profile.custom_icon_url ?? "");
+    setTierOverride(profile.tier_color_override ?? null);
+    setTier(profile.subscription_tier ?? "free");
   }, [profile.id]);
 
   const gradient = stops.length >= 2 ? stopsToGradient(stops) : "";
@@ -241,9 +245,11 @@ const UserEditor = ({
       .update({
         custom_gradient: gradient.trim() || null,
         custom_icon_url: iconUrl.trim() || null,
-      })
+        tier_color_override: tierOverride,
+        subscription_tier: tier,
+      } as any)
       .eq("id", profile.id)
-      .select("id, username, avatar_url, custom_gradient, custom_icon_url, banned")
+      .select("id, username, avatar_url, custom_gradient, custom_icon_url, banned, subscription_tier, tier_color_override")
       .single();
     setBusy(false);
     if (error) {
@@ -252,6 +258,7 @@ const UserEditor = ({
     }
     onChanged(data as any);
     refreshCustomStyles();
+    refreshTierStyles();
     toast("Saved");
   };
 
