@@ -246,7 +246,6 @@ const UserEditor = ({
         custom_gradient: gradient.trim() || null,
         custom_icon_url: iconUrl.trim() || null,
         tier_color_override: tierOverride,
-        subscription_tier: tier,
       } as any)
       .eq("id", profile.id)
       .select("id, username, avatar_url, custom_gradient, custom_icon_url, banned, subscription_tier, tier_color_override")
