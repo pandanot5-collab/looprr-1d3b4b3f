@@ -113,9 +113,22 @@ export const VideoCard = ({ video, onMutate, onOpen }: { video: FeedVideo; onMut
     toast("Boosted ⚡", { description: "This video will rank higher in the feed." });
   };
 
+  const tierBorderStyle = tier.color
+    ? {
+        borderColor: `hsl(${tier.color})`,
+        boxShadow: `0 0 0 1px hsl(${tier.color} / 0.5), 0 8px 32px -8px hsl(${tier.color} / 0.45)`,
+      }
+    : undefined;
+
   return (
     <article className="snap-start-always min-h-[calc(100vh-8.5rem)] flex flex-col py-3 px-3">
-      <div className="surface-elevated border border-border rounded-2xl overflow-hidden flex flex-col flex-1">
+      <div
+        className={cn(
+          "surface-elevated border rounded-2xl overflow-hidden flex flex-col flex-1",
+          tier.color ? "border-2" : "border border-border"
+        )}
+        style={tierBorderStyle}
+      >
         {/* Video player */}
         <div className="relative bg-black aspect-[9/16] w-full max-h-[70vh] group">
           {video.platform === "youtube_shorts" && video.external_id ? (
