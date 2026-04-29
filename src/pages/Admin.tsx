@@ -78,9 +78,11 @@ const Admin = () => {
             <ShieldCheck className="w-6 h-6 text-accent" /> Admin
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Manage users, custom gradients, icons, and bans.
+            Manage users, custom gradients, icons, tier colors, and bans.
           </p>
         </div>
+
+        <TierColorEditor />
 
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
