@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, ChevronRight, UserPlus, UserMinus } from "lucide-react";
 import { toast } from "sonner";
 import { UsernameDisplay } from "@/components/UsernameDisplay";
+import { useTierStyles } from "@/hooks/useTierStyles";
 
 const UserProfile = () => {
   const { username } = useParams<{ username: string }>();
