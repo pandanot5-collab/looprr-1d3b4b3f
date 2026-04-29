@@ -30,6 +30,8 @@ export interface FeedVideo {
 
 export const VideoCard = ({ video, onMutate, onOpen }: { video: FeedVideo; onMutate?: () => void; onOpen?: () => void }) => {
   const { user } = useAuth();
+  const { getTierInfo } = useTierStyles();
+  const tier = getTierInfo(video.posted_by);
   const [reaction, setReaction] = useState<"like" | "dislike" | null>(null);
   const [boosted, setBoosted] = useState(false);
   const [counts, setCounts] = useState({
