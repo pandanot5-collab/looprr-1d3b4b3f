@@ -107,6 +107,18 @@ export const UsernameDisplay = ({
           style={{ width: iconSize, height: iconSize }}
         />
       )}
+      {TierIcon && tierInfo.color && (
+        <TierIcon
+          className="shrink-0"
+          style={{
+            width: iconSize,
+            height: iconSize,
+            color: `hsl(${tierInfo.color})`,
+            filter: `drop-shadow(0 0 4px hsl(${tierInfo.color} / 0.6))`,
+          }}
+          aria-label={TIER_LABEL[tierInfo.tier as keyof typeof TIER_LABEL]}
+        />
+      )}
     </span>
   );
 };
