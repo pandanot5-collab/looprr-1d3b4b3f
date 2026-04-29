@@ -11,7 +11,7 @@ import { UsernameDisplay } from "@/components/UsernameDisplay";
 import { refreshCustomStyles } from "@/hooks/useCustomStyles";
 import { refreshTierStyles, type SubTier } from "@/hooks/useTierStyles";
 
-const TIERS: SubTier[] = ["free", "starter", "pro", "elite"];
+
 
 interface AdminProfile {
   id: string;
