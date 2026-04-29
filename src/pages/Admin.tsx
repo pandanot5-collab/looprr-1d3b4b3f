@@ -428,6 +428,40 @@ const UserEditor = ({
         )}
       </div>
 
+      {/* Tier color override */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <Palette className="w-3.5 h-3.5" /> Tier color override
+        </label>
+        <p className="text-[11px] text-muted-foreground -mt-1">
+          Current tier: <span className="font-mono uppercase">{tier}</span>
+          {tier === "free" && " — free users have no tier color"}
+        </p>
+        {tier !== "free" && (
+          <div className="flex items-center gap-3">
+            <label
+              className="block w-10 h-10 rounded-full border-2 border-border cursor-pointer overflow-hidden shadow-sm hover:border-foreground transition-colors"
+              style={{ background: tierOverride ? `hsl(${tierOverride})` : "transparent" }}
+            >
+              <input
+                type="color"
+                value={hslTripletToHex(tierOverride)}
+                onChange={(e) => setTierOverride(hexToHslTriplet(e.target.value))}
+                className="opacity-0 w-full h-full cursor-pointer"
+              />
+            </label>
+            {tierOverride && (
+              <Button size="sm" variant="ghost" onClick={() => setTierOverride(null)}>
+                <Trash2 className="w-4 h-4 mr-1" /> Use global
+              </Button>
+            )}
+            <span className="text-[11px] text-muted-foreground">
+              {tierOverride ? "Custom" : "Using global tier color"}
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* Custom icon */}
       <div className="flex flex-col gap-2">
         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
