@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { TikTokEmbed } from "@/components/TikTokEmbed";
 import { UsernameDisplay } from "@/components/UsernameDisplay";
+import { useTierStyles } from "@/hooks/useTierStyles";
 
 export interface FeedVideo {
   id: string;
