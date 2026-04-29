@@ -122,14 +122,26 @@ const UserProfile = () => {
   return (
     <AppShell>
       <div className="px-4 py-6 flex flex-col gap-6">
-        <div className="flex items-center gap-4">
+        <div
+          className="flex items-center gap-4 rounded-2xl p-4 -mx-1 transition-all"
+          style={
+            tier.color
+              ? {
+                  background: `radial-gradient(120% 100% at 0% 0%, hsl(${tier.color} / 0.18), transparent 60%)`,
+                  boxShadow: `inset 0 0 0 1px hsl(${tier.color} / 0.35)`,
+                }
+              : undefined
+          }
+        >
           <Avatar username={profile.username} url={profile.avatar_url} size={72} />
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl font-bold tracking-tight truncate">
               <UsernameDisplay userId={profile.id} username={profile.username} iconSize={20} />
             </h1>
             <p className="text-xs text-muted-foreground font-mono mt-0.5">
-              {profile.is_subscriber ? "PRO MEMBER" : "FREE TIER"}
+              {profile.subscription_tier && profile.subscription_tier !== "free"
+                ? `${profile.subscription_tier.toUpperCase()} MEMBER`
+                : "FREE TIER"}
             </p>
           </div>
         </div>
