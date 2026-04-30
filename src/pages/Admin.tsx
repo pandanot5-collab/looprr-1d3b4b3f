@@ -481,6 +481,114 @@ const UserEditor = ({
         )}
       </div>
 
+      {/* Profile color (admin per-user) */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <Palette className="w-3.5 h-3.5" /> Profile page color
+        </label>
+        <p className="text-[11px] text-muted-foreground -mt-1">
+          Tints the profile page background and border. Falls back to tier color if unset.
+        </p>
+        <div className="flex items-center gap-3">
+          <label
+            className="block w-10 h-10 rounded-full border-2 border-border cursor-pointer overflow-hidden shadow-sm hover:border-foreground transition-colors"
+            style={{ background: profileColor ? `hsl(${profileColor})` : "transparent" }}
+          >
+            <input
+              type="color"
+              value={hslTripletToHex(profileColor)}
+              onChange={(e) => setProfileColor(hexToHslTriplet(e.target.value))}
+              className="opacity-0 w-full h-full cursor-pointer"
+            />
+          </label>
+          {profileColor && (
+            <Button size="sm" variant="ghost" onClick={() => setProfileColor(null)}>
+              <Trash2 className="w-4 h-4 mr-1" /> Clear
+            </Button>
+          )}
+          <span className="text-[11px] text-muted-foreground">
+            {profileColor ? "Custom" : "Using tier color"}
+          </span>
+        </div>
+      </div>
+
+      {/* Video color (admin per-user) */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <Palette className="w-3.5 h-3.5" /> Video accent color
+        </label>
+        <p className="text-[11px] text-muted-foreground -mt-1">
+          Color of the border + action buttons on this person's videos. Falls back to tier color.
+        </p>
+        <div className="flex items-center gap-3">
+          <label
+            className="block w-10 h-10 rounded-full border-2 border-border cursor-pointer overflow-hidden shadow-sm hover:border-foreground transition-colors"
+            style={{ background: videoColor ? `hsl(${videoColor})` : "transparent" }}
+          >
+            <input
+              type="color"
+              value={hslTripletToHex(videoColor)}
+              onChange={(e) => setVideoColor(hexToHslTriplet(e.target.value))}
+              className="opacity-0 w-full h-full cursor-pointer"
+            />
+          </label>
+          {videoColor && (
+            <Button size="sm" variant="ghost" onClick={() => setVideoColor(null)}>
+              <Trash2 className="w-4 h-4 mr-1" /> Clear
+            </Button>
+          )}
+          <span className="text-[11px] text-muted-foreground">
+            {videoColor ? "Custom" : "Using tier color"}
+          </span>
+        </div>
+      </div>
+
+      {/* Subscription expiry */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Subscription expires on
+        </label>
+        <p className="text-[11px] text-muted-foreground -mt-1">
+          Once past this date, colors fade and they show as a former member. Leave blank for no expiry.
+        </p>
+        <div className="flex items-center gap-2">
+          <Input
+            type="date"
+            value={expiresAt}
+            onChange={(e) => setExpiresAt(e.target.value)}
+            className="h-9 max-w-[200px]"
+          />
+          {expiresAt && (
+            <Button size="sm" variant="ghost" onClick={() => setExpiresAt("")}>
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Last paid tier */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Last paid tier (for "former member" look)
+        </label>
+        <div className="flex flex-wrap gap-1.5">
+          {(["free", "starter", "pro", "elite"] as SubTier[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setLastPaidTier(t === "free" ? null : t)}
+              className={cn(
+                "text-xs px-3 h-8 rounded-full border transition-colors uppercase font-mono tracking-wider",
+                (lastPaidTier ?? "free") === t
+                  ? "bg-foreground text-background border-foreground"
+                  : "border-border hover:border-foreground",
+              )}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Custom icon */}
       <div className="flex flex-col gap-2">
         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
