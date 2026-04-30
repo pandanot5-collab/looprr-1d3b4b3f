@@ -314,13 +314,21 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
           const rep = !!reported[v.id];
           const required = requiredReports(c.like);
           const isActive = idx === activeIndex;
+          const creatorColor = getVideoColor(v.posted_by);
           return (
             <section
               key={v.id}
               className="snap-start h-full w-full relative flex items-center justify-center"
             >
               {/* Player */}
-              <div className="relative w-full h-full max-w-[500px] mx-auto">
+              <div
+                className="relative w-full h-full max-w-[500px] mx-auto"
+                style={
+                  creatorColor
+                    ? { boxShadow: `inset 0 0 0 3px hsl(${creatorColor} / 0.85), 0 0 24px hsl(${creatorColor} / 0.35)` }
+                    : undefined
+                }
+              >
                 {v.platform === "youtube_shorts" && v.external_id ? (
                   <iframe
                     key={isActive ? `${v.id}-active` : v.id}
