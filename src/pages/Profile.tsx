@@ -114,10 +114,10 @@ const Profile = () => {
         <div
           className="flex items-center gap-4 rounded-2xl p-4 -mx-1 transition-all"
           style={
-            tier.color
+            profileColor
               ? {
-                  background: `radial-gradient(120% 100% at 0% 0%, hsl(${tier.color} / 0.18), transparent 60%)`,
-                  boxShadow: `inset 0 0 0 1px hsl(${tier.color} / 0.35)`,
+                  background: `radial-gradient(120% 100% at 0% 0%, hsl(${profileColor} / 0.18), transparent 60%)`,
+                  boxShadow: `inset 0 0 0 1px hsl(${profileColor} / 0.35)`,
                 }
               : undefined
           }
