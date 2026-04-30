@@ -18,8 +18,9 @@ const Profile = () => {
   const [category, setCategory] = useState<{ name: string; slug: string } | null>(null);
   const [verifying, setVerifying] = useState(false);
   const badgesMap = useCreatorBadges();
-  const { getTierInfo } = useTierStyles();
+  const { getTierInfo, getProfileColor } = useTierStyles();
   const tier = getTierInfo(user?.id);
+  const profileColor = getProfileColor(user?.id);
   const myBadges = (user && badgesMap.get(user.id)) || [];
   const youtubeBadge = myBadges.find((b) => b.platform === "youtube");
 
