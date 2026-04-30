@@ -21,8 +21,8 @@ const UserProfile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const { getTierInfo } = useTierStyles();
-  const tier = getTierInfo(profile?.id);
+  const { getProfileColor } = useTierStyles();
+  const profileColor = getProfileColor(profile?.id);
 
   const load = async () => {
     if (!username) return;
