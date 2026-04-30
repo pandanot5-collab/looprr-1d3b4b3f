@@ -229,6 +229,12 @@ const UserEditor = ({
   });
   const [iconUrl, setIconUrl] = useState(profile.custom_icon_url ?? "");
   const [tierOverride, setTierOverride] = useState<string | null>(profile.tier_color_override ?? null);
+  const [profileColor, setProfileColor] = useState<string | null>(profile.profile_color ?? null);
+  const [videoColor, setVideoColor] = useState<string | null>(profile.video_color ?? null);
+  const [expiresAt, setExpiresAt] = useState<string>(
+    profile.subscription_expires_at ? profile.subscription_expires_at.slice(0, 10) : "",
+  );
+  const [lastPaidTier, setLastPaidTier] = useState<SubTier | null>(profile.last_paid_tier ?? null);
   const tier: SubTier = profile.subscription_tier ?? "free";
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -238,6 +244,10 @@ const UserEditor = ({
     setStops(parsed.length >= 2 ? parsed : []);
     setIconUrl(profile.custom_icon_url ?? "");
     setTierOverride(profile.tier_color_override ?? null);
+    setProfileColor(profile.profile_color ?? null);
+    setVideoColor(profile.video_color ?? null);
+    setExpiresAt(profile.subscription_expires_at ? profile.subscription_expires_at.slice(0, 10) : "");
+    setLastPaidTier(profile.last_paid_tier ?? null);
   }, [profile.id]);
 
   const gradient = stops.length >= 2 ? stopsToGradient(stops) : "";
