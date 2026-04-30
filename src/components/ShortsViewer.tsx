@@ -507,19 +507,28 @@ const RailButton = ({
   label,
   onClick,
   small,
+  accentColor,
 }: {
   icon: React.ReactNode;
   label: number | string;
   onClick: () => void;
   small?: boolean;
+  accentColor?: string | null;
 }) => (
   <button
     onClick={onClick}
     className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
   >
     <span
-      className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center hover:bg-black/70 transition-colors ring-1 ring-white/40 border border-black/60"
-      style={{ boxShadow: "0 0 0 1px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.5)" }}
+      className={cn(
+        "w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center hover:bg-black/70 transition-colors border border-black/60",
+        !accentColor && "ring-1 ring-white/40",
+      )}
+      style={{
+        boxShadow: accentColor
+          ? `0 0 0 2px hsl(${accentColor}), 0 0 12px hsl(${accentColor} / 0.6), 0 2px 8px rgba(0,0,0,0.5)`
+          : "0 0 0 1px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.5)",
+      }}
     >
       {icon}
     </span>
