@@ -22,7 +22,14 @@ interface AdminProfile {
   banned: boolean;
   subscription_tier: SubTier;
   tier_color_override: string | null;
+  profile_color: string | null;
+  video_color: string | null;
+  subscription_expires_at: string | null;
+  last_paid_tier: SubTier | null;
 }
+
+const SELECT_COLS =
+  "id, username, avatar_url, custom_gradient, custom_icon_url, banned, subscription_tier, tier_color_override, profile_color, video_color, subscription_expires_at, last_paid_tier";
 
 const Admin = () => {
   const { user, isAdmin, loading } = useAuth();
