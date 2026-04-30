@@ -48,7 +48,19 @@ export const UsernameDisplay = ({
   const userBadges = (userId && badges.get(userId)) || [];
   const custom = (userId && customStyles.get(userId)) || null;
   const tierInfo = getTierInfo(userId);
-  const TierIcon = tierInfo.tier !== "free" ? TIER_ICONS[tierInfo.tier] : null;
+  // Show icon for active paid tiers, OR a faded icon for expired ex-members
+  const iconTier =
+    tierInfo.tier !== "free"
+      ? tierInfo.tier
+      : tierInfo.expired && tierInfo.pastTier
+        ? tierInfo.pastTier
+        : null;
+  const TierIcon = iconTier ? TIER_ICONS[iconTier] : null;
+  const tierLabel = iconTier
+    ? tierInfo.expired
+      ? `Former ${TIER_LABEL[iconTier]}`
+      : TIER_LABEL[iconTier]
+    : "";
 
   const platforms = new Set<CreatorPlatform>(userBadges.map((b) => b.platform));
   const hasYoutube = platforms.has("youtube");
@@ -114,9 +126,12 @@ export const UsernameDisplay = ({
             width: iconSize,
             height: iconSize,
             color: `hsl(${tierInfo.color})`,
-            filter: `drop-shadow(0 0 4px hsl(${tierInfo.color} / 0.6))`,
+            filter: tierInfo.expired
+              ? `drop-shadow(0 0 2px hsl(${tierInfo.color} / 0.4)) grayscale(0.4)`
+              : `drop-shadow(0 0 4px hsl(${tierInfo.color} / 0.6))`,
+            opacity: tierInfo.expired ? 0.7 : 1,
           }}
-          aria-label={TIER_LABEL[tierInfo.tier as keyof typeof TIER_LABEL]}
+          aria-label={tierLabel}
         />
       )}
     </span>

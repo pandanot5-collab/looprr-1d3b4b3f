@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { UsernameDisplay } from "@/components/UsernameDisplay";
 import { refreshCustomStyles } from "@/hooks/useCustomStyles";
 import { refreshTierStyles, type SubTier } from "@/hooks/useTierStyles";
+import { cn } from "@/lib/utils";
 
 
 
@@ -22,7 +23,14 @@ interface AdminProfile {
   banned: boolean;
   subscription_tier: SubTier;
   tier_color_override: string | null;
+  profile_color: string | null;
+  video_color: string | null;
+  subscription_expires_at: string | null;
+  last_paid_tier: SubTier | null;
 }
+
+const SELECT_COLS =
+  "id, username, avatar_url, custom_gradient, custom_icon_url, banned, subscription_tier, tier_color_override, profile_color, video_color, subscription_expires_at, last_paid_tier";
 
 const Admin = () => {
   const { user, isAdmin, loading } = useAuth();
@@ -45,7 +53,7 @@ const Admin = () => {
     setSearching(true);
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, avatar_url, custom_gradient, custom_icon_url, banned, subscription_tier, tier_color_override")
+      .select(SELECT_COLS)
       .ilike("username", `%${q}%`)
       .limit(25);
     setResults((data as any) ?? []);
@@ -222,6 +230,12 @@ const UserEditor = ({
   });
   const [iconUrl, setIconUrl] = useState(profile.custom_icon_url ?? "");
   const [tierOverride, setTierOverride] = useState<string | null>(profile.tier_color_override ?? null);
+  const [profileColor, setProfileColor] = useState<string | null>(profile.profile_color ?? null);
+  const [videoColor, setVideoColor] = useState<string | null>(profile.video_color ?? null);
+  const [expiresAt, setExpiresAt] = useState<string>(
+    profile.subscription_expires_at ? profile.subscription_expires_at.slice(0, 10) : "",
+  );
+  const [lastPaidTier, setLastPaidTier] = useState<SubTier | null>(profile.last_paid_tier ?? null);
   const tier: SubTier = profile.subscription_tier ?? "free";
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -231,6 +245,10 @@ const UserEditor = ({
     setStops(parsed.length >= 2 ? parsed : []);
     setIconUrl(profile.custom_icon_url ?? "");
     setTierOverride(profile.tier_color_override ?? null);
+    setProfileColor(profile.profile_color ?? null);
+    setVideoColor(profile.video_color ?? null);
+    setExpiresAt(profile.subscription_expires_at ? profile.subscription_expires_at.slice(0, 10) : "");
+    setLastPaidTier(profile.last_paid_tier ?? null);
   }, [profile.id]);
 
   const gradient = stops.length >= 2 ? stopsToGradient(stops) : "";
@@ -243,9 +261,13 @@ const UserEditor = ({
         custom_gradient: gradient.trim() || null,
         custom_icon_url: iconUrl.trim() || null,
         tier_color_override: tierOverride,
+        profile_color: profileColor,
+        video_color: videoColor,
+        subscription_expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
+        last_paid_tier: lastPaidTier,
       } as any)
       .eq("id", profile.id)
-      .select("id, username, avatar_url, custom_gradient, custom_icon_url, banned, subscription_tier, tier_color_override")
+      .select(SELECT_COLS)
       .single();
     setBusy(false);
     if (error) {
@@ -458,6 +480,114 @@ const UserEditor = ({
             </span>
           </div>
         )}
+      </div>
+
+      {/* Profile color (admin per-user) */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <Palette className="w-3.5 h-3.5" /> Profile page color
+        </label>
+        <p className="text-[11px] text-muted-foreground -mt-1">
+          Tints the profile page background and border. Falls back to tier color if unset.
+        </p>
+        <div className="flex items-center gap-3">
+          <label
+            className="block w-10 h-10 rounded-full border-2 border-border cursor-pointer overflow-hidden shadow-sm hover:border-foreground transition-colors"
+            style={{ background: profileColor ? `hsl(${profileColor})` : "transparent" }}
+          >
+            <input
+              type="color"
+              value={hslTripletToHex(profileColor)}
+              onChange={(e) => setProfileColor(hexToHslTriplet(e.target.value))}
+              className="opacity-0 w-full h-full cursor-pointer"
+            />
+          </label>
+          {profileColor && (
+            <Button size="sm" variant="ghost" onClick={() => setProfileColor(null)}>
+              <Trash2 className="w-4 h-4 mr-1" /> Clear
+            </Button>
+          )}
+          <span className="text-[11px] text-muted-foreground">
+            {profileColor ? "Custom" : "Using tier color"}
+          </span>
+        </div>
+      </div>
+
+      {/* Video color (admin per-user) */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+          <Palette className="w-3.5 h-3.5" /> Video accent color
+        </label>
+        <p className="text-[11px] text-muted-foreground -mt-1">
+          Color of the border + action buttons on this person's videos. Falls back to tier color.
+        </p>
+        <div className="flex items-center gap-3">
+          <label
+            className="block w-10 h-10 rounded-full border-2 border-border cursor-pointer overflow-hidden shadow-sm hover:border-foreground transition-colors"
+            style={{ background: videoColor ? `hsl(${videoColor})` : "transparent" }}
+          >
+            <input
+              type="color"
+              value={hslTripletToHex(videoColor)}
+              onChange={(e) => setVideoColor(hexToHslTriplet(e.target.value))}
+              className="opacity-0 w-full h-full cursor-pointer"
+            />
+          </label>
+          {videoColor && (
+            <Button size="sm" variant="ghost" onClick={() => setVideoColor(null)}>
+              <Trash2 className="w-4 h-4 mr-1" /> Clear
+            </Button>
+          )}
+          <span className="text-[11px] text-muted-foreground">
+            {videoColor ? "Custom" : "Using tier color"}
+          </span>
+        </div>
+      </div>
+
+      {/* Subscription expiry */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Subscription expires on
+        </label>
+        <p className="text-[11px] text-muted-foreground -mt-1">
+          Once past this date, colors fade and they show as a former member. Leave blank for no expiry.
+        </p>
+        <div className="flex items-center gap-2">
+          <Input
+            type="date"
+            value={expiresAt}
+            onChange={(e) => setExpiresAt(e.target.value)}
+            className="h-9 max-w-[200px]"
+          />
+          {expiresAt && (
+            <Button size="sm" variant="ghost" onClick={() => setExpiresAt("")}>
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Last paid tier */}
+      <div className="flex flex-col gap-2">
+        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          Last paid tier (for "former member" look)
+        </label>
+        <div className="flex flex-wrap gap-1.5">
+          {(["free", "starter", "pro", "elite"] as SubTier[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setLastPaidTier(t === "free" ? null : t)}
+              className={cn(
+                "text-xs px-3 h-8 rounded-full border transition-colors uppercase font-mono tracking-wider",
+                (lastPaidTier ?? "free") === t
+                  ? "bg-foreground text-background border-foreground"
+                  : "border-border hover:border-foreground",
+              )}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Custom icon */}

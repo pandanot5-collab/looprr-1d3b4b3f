@@ -150,10 +150,16 @@ export type Database = {
           custom_icon_url: string | null
           id: string
           is_subscriber: boolean
+          last_paid_tier:
+            | Database["public"]["Enums"]["subscription_tier"]
+            | null
+          profile_color: string | null
+          subscription_expires_at: string | null
           subscription_tier: Database["public"]["Enums"]["subscription_tier"]
           tier_color_override: string | null
           updated_at: string
           username: string
+          video_color: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -163,10 +169,16 @@ export type Database = {
           custom_icon_url?: string | null
           id: string
           is_subscriber?: boolean
+          last_paid_tier?:
+            | Database["public"]["Enums"]["subscription_tier"]
+            | null
+          profile_color?: string | null
+          subscription_expires_at?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           tier_color_override?: string | null
           updated_at?: string
           username: string
+          video_color?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -176,10 +188,16 @@ export type Database = {
           custom_icon_url?: string | null
           id?: string
           is_subscriber?: boolean
+          last_paid_tier?:
+            | Database["public"]["Enums"]["subscription_tier"]
+            | null
+          profile_color?: string | null
+          subscription_expires_at?: string | null
           subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
           tier_color_override?: string | null
           updated_at?: string
           username?: string
+          video_color?: string | null
         }
         Relationships: []
       }

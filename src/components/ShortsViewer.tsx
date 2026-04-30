@@ -26,6 +26,7 @@ import { TikTokEmbed } from "@/components/TikTokEmbed";
 import { Comments } from "@/components/Comments";
 import { checkAndMarkOnView } from "@/lib/video-health";
 import { incrementScrollCount } from "@/components/InstallPrompt";
+import { useTierStyles } from "@/hooks/useTierStyles";
 
 interface Props {
   videos: FeedVideo[];
@@ -45,6 +46,7 @@ interface Counts {
 
 export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, inline = false }: Props) => {
   const { user, isAdmin } = useAuth();
+  const { getVideoColor } = useTierStyles();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(startIndex);
   const [videos, setVideos] = useState<FeedVideo[]>(initialVideos);
@@ -312,13 +314,21 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
           const rep = !!reported[v.id];
           const required = requiredReports(c.like);
           const isActive = idx === activeIndex;
+          const creatorColor = getVideoColor(v.posted_by);
           return (
             <section
               key={v.id}
               className="snap-start h-full w-full relative flex items-center justify-center"
             >
               {/* Player */}
-              <div className="relative w-full h-full max-w-[500px] mx-auto">
+              <div
+                className="relative w-full h-full max-w-[500px] mx-auto"
+                style={
+                  creatorColor
+                    ? { boxShadow: `inset 0 0 0 3px hsl(${creatorColor} / 0.85), 0 0 24px hsl(${creatorColor} / 0.35)` }
+                    : undefined
+                }
+              >
                 {v.platform === "youtube_shorts" && v.external_id ? (
                   <iframe
                     key={isActive ? `${v.id}-active` : v.id}
@@ -376,32 +386,38 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
                 {/* Right side action rail */}
                 <div className="absolute right-2 bottom-24 flex flex-col items-center gap-4 text-white">
                   <RailButton
+                    accentColor={creatorColor}
                     icon={<Heart className={cn("w-7 h-7", r === "like" && "fill-current text-red-500")} />}
                     label={c.like}
                     onClick={() => handleReact(v.id, "like")}
                   />
                   <RailButton
+                    accentColor={creatorColor}
                     icon={<ThumbsDown className={cn("w-7 h-7", r === "dislike" && "fill-current")} />}
                     label={c.dislike}
                     onClick={() => handleReact(v.id, "dislike")}
                   />
                   <RailButton
+                    accentColor={creatorColor}
                     icon={<Zap className={cn("w-7 h-7", b && "fill-current text-yellow-400")} />}
                     label={c.boost}
                     onClick={() => handleBoost(v.id)}
                   />
                   <RailButton
+                    accentColor={creatorColor}
                     icon={<MessageCircle className="w-7 h-7" />}
                     label={commentCounts[v.id] ?? 0}
                     onClick={() => setCommentsTarget(v)}
                   />
                   <RailButton
+                    accentColor={creatorColor}
                     icon={<Eye className="w-6 h-6" />}
                     label={c.views}
                     onClick={() => {}}
                     small
                   />
                   <RailButton
+                    accentColor={creatorColor}
                     icon={<Flag className={cn("w-6 h-6", rep && "fill-current text-orange-400")} />}
                     label={`${c.reports}/${required}`}
                     onClick={() => openReport(v.id)}
@@ -409,6 +425,7 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
                   />
                   {canDelete(v) && (
                     <RailButton
+                      accentColor={creatorColor}
                       icon={<Trash2 className="w-6 h-6 text-red-400" />}
                       label=""
                       onClick={() => setDeleteTarget(v.id)}
@@ -490,19 +507,28 @@ const RailButton = ({
   label,
   onClick,
   small,
+  accentColor,
 }: {
   icon: React.ReactNode;
   label: number | string;
   onClick: () => void;
   small?: boolean;
+  accentColor?: string | null;
 }) => (
   <button
     onClick={onClick}
     className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
   >
     <span
-      className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center hover:bg-black/70 transition-colors ring-1 ring-white/40 border border-black/60"
-      style={{ boxShadow: "0 0 0 1px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.5)" }}
+      className={cn(
+        "w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center hover:bg-black/70 transition-colors border border-black/60",
+        !accentColor && "ring-1 ring-white/40",
+      )}
+      style={{
+        boxShadow: accentColor
+          ? `0 0 0 2px hsl(${accentColor}), 0 0 12px hsl(${accentColor} / 0.6), 0 2px 8px rgba(0,0,0,0.5)`
+          : "0 0 0 1px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.5)",
+      }}
     >
       {icon}
     </span>

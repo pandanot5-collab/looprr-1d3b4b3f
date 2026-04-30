@@ -18,8 +18,9 @@ const Profile = () => {
   const [category, setCategory] = useState<{ name: string; slug: string } | null>(null);
   const [verifying, setVerifying] = useState(false);
   const badgesMap = useCreatorBadges();
-  const { getTierInfo } = useTierStyles();
+  const { getTierInfo, getProfileColor } = useTierStyles();
   const tier = getTierInfo(user?.id);
+  const profileColor = getProfileColor(user?.id);
   const myBadges = (user && badgesMap.get(user.id)) || [];
   const youtubeBadge = myBadges.find((b) => b.platform === "youtube");
 
@@ -113,10 +114,10 @@ const Profile = () => {
         <div
           className="flex items-center gap-4 rounded-2xl p-4 -mx-1 transition-all"
           style={
-            tier.color
+            profileColor
               ? {
-                  background: `radial-gradient(120% 100% at 0% 0%, hsl(${tier.color} / 0.18), transparent 60%)`,
-                  boxShadow: `inset 0 0 0 1px hsl(${tier.color} / 0.35)`,
+                  background: `radial-gradient(120% 100% at 0% 0%, hsl(${profileColor} / 0.18), transparent 60%)`,
+                  boxShadow: `inset 0 0 0 1px hsl(${profileColor} / 0.35)`,
                 }
               : undefined
           }
@@ -127,9 +128,11 @@ const Profile = () => {
               <UsernameDisplay userId={profile.id} username={profile.username} iconSize={20} />
             </h1>
             <p className="text-xs text-muted-foreground font-mono mt-0.5">
-              {profile.subscription_tier && profile.subscription_tier !== "free"
-                ? `${profile.subscription_tier.toUpperCase()} MEMBER`
-                : "FREE TIER"}
+              {tier.tier !== "free"
+                ? `${tier.tier.toUpperCase()} MEMBER`
+                : tier.expired && tier.pastTier
+                  ? `EX-${tier.pastTier.toUpperCase()} MEMBER`
+                  : "FREE TIER"}
             </p>
           </div>
         </div>
