@@ -48,7 +48,19 @@ export const UsernameDisplay = ({
   const userBadges = (userId && badges.get(userId)) || [];
   const custom = (userId && customStyles.get(userId)) || null;
   const tierInfo = getTierInfo(userId);
-  const TierIcon = tierInfo.tier !== "free" ? TIER_ICONS[tierInfo.tier] : null;
+  // Show icon for active paid tiers, OR a faded icon for expired ex-members
+  const iconTier =
+    tierInfo.tier !== "free"
+      ? tierInfo.tier
+      : tierInfo.expired && tierInfo.pastTier
+        ? tierInfo.pastTier
+        : null;
+  const TierIcon = iconTier ? TIER_ICONS[iconTier] : null;
+  const tierLabel = iconTier
+    ? tierInfo.expired
+      ? `Former ${TIER_LABEL[iconTier]}`
+      : TIER_LABEL[iconTier]
+    : "";
 
   const platforms = new Set<CreatorPlatform>(userBadges.map((b) => b.platform));
   const hasYoutube = platforms.has("youtube");
