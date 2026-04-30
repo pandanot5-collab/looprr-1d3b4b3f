@@ -3,6 +3,7 @@ import { Compass, Plus, Search, User, Sun, Moon, Crown, ShieldCheck } from "luci
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { UsernameDisplay } from "@/components/UsernameDisplay";
+import { InstallButton, ScrollInstallPrompt } from "@/components/InstallPrompt";
 import logo from "@/assets/loopr-logo.png";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
             <span className="font-semibold text-lg tracking-tight">loopr</span>
           </Link>
           <div className="flex items-center gap-1">
+            <InstallButton compact />
             {isAdmin && (
               <Link
                 to="/admin"
@@ -89,6 +91,8 @@ export const AppShell = ({ children }: { children: React.ReactNode }) => {
           })}
         </div>
       </nav>
+
+      <ScrollInstallPrompt />
     </div>
   );
 };

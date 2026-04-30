@@ -25,6 +25,7 @@ import type { FeedVideo } from "@/components/VideoCard";
 import { TikTokEmbed } from "@/components/TikTokEmbed";
 import { Comments } from "@/components/Comments";
 import { checkAndMarkOnView } from "@/lib/video-health";
+import { incrementScrollCount } from "@/components/InstallPrompt";
 
 interface Props {
   videos: FeedVideo[];
@@ -96,8 +97,13 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+    let lastIndex = Math.round(el.scrollTop / el.clientHeight);
     const onScroll = () => {
       const i = Math.round(el.scrollTop / el.clientHeight);
+      if (i !== lastIndex) {
+        lastIndex = i;
+        incrementScrollCount();
+      }
       setActiveIndex(i);
     };
     el.addEventListener("scroll", onScroll, { passive: true });
