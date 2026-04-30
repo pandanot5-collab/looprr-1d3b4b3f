@@ -126,9 +126,12 @@ export const UsernameDisplay = ({
             width: iconSize,
             height: iconSize,
             color: `hsl(${tierInfo.color})`,
-            filter: `drop-shadow(0 0 4px hsl(${tierInfo.color} / 0.6))`,
+            filter: tierInfo.expired
+              ? `drop-shadow(0 0 2px hsl(${tierInfo.color} / 0.4)) grayscale(0.4)`
+              : `drop-shadow(0 0 4px hsl(${tierInfo.color} / 0.6))`,
+            opacity: tierInfo.expired ? 0.7 : 1,
           }}
-          aria-label={TIER_LABEL[tierInfo.tier as keyof typeof TIER_LABEL]}
+          aria-label={tierLabel}
         />
       )}
     </span>
