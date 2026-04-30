@@ -128,9 +128,11 @@ const Profile = () => {
               <UsernameDisplay userId={profile.id} username={profile.username} iconSize={20} />
             </h1>
             <p className="text-xs text-muted-foreground font-mono mt-0.5">
-              {profile.subscription_tier && profile.subscription_tier !== "free"
-                ? `${profile.subscription_tier.toUpperCase()} MEMBER`
-                : "FREE TIER"}
+              {tier.tier !== "free"
+                ? `${tier.tier.toUpperCase()} MEMBER`
+                : tier.expired && tier.pastTier
+                  ? `EX-${tier.pastTier.toUpperCase()} MEMBER`
+                  : "FREE TIER"}
             </p>
           </div>
         </div>
