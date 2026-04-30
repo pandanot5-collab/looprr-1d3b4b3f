@@ -260,9 +260,13 @@ const UserEditor = ({
         custom_gradient: gradient.trim() || null,
         custom_icon_url: iconUrl.trim() || null,
         tier_color_override: tierOverride,
+        profile_color: profileColor,
+        video_color: videoColor,
+        subscription_expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
+        last_paid_tier: lastPaidTier,
       } as any)
       .eq("id", profile.id)
-      .select("id, username, avatar_url, custom_gradient, custom_icon_url, banned, subscription_tier, tier_color_override")
+      .select(SELECT_COLS)
       .single();
     setBusy(false);
     if (error) {
