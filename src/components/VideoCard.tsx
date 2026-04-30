@@ -113,10 +113,10 @@ export const VideoCard = ({ video, onMutate, onOpen }: { video: FeedVideo; onMut
     toast("Boosted ⚡", { description: "This video will rank higher in the feed." });
   };
 
-  const tierBorderStyle = tier.color
+  const tierBorderStyle = videoColor
     ? {
-        borderColor: `hsl(${tier.color})`,
-        boxShadow: `0 0 0 1px hsl(${tier.color} / 0.5), 0 8px 32px -8px hsl(${tier.color} / 0.45)`,
+        borderColor: `hsl(${videoColor})`,
+        boxShadow: `0 0 0 1px hsl(${videoColor} / 0.5), 0 8px 32px -8px hsl(${videoColor} / 0.45)`,
       }
     : undefined;
 
@@ -125,7 +125,7 @@ export const VideoCard = ({ video, onMutate, onOpen }: { video: FeedVideo; onMut
       <div
         className={cn(
           "surface-elevated border rounded-2xl overflow-hidden flex flex-col flex-1",
-          tier.color ? "border-2" : "border border-border"
+          videoColor ? "border-2" : "border border-border"
         )}
         style={tierBorderStyle}
       >
