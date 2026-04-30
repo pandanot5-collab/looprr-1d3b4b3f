@@ -386,32 +386,38 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
                 {/* Right side action rail */}
                 <div className="absolute right-2 bottom-24 flex flex-col items-center gap-4 text-white">
                   <RailButton
+                    accentColor={creatorColor}
                     icon={<Heart className={cn("w-7 h-7", r === "like" && "fill-current text-red-500")} />}
                     label={c.like}
                     onClick={() => handleReact(v.id, "like")}
                   />
                   <RailButton
+                    accentColor={creatorColor}
                     icon={<ThumbsDown className={cn("w-7 h-7", r === "dislike" && "fill-current")} />}
                     label={c.dislike}
                     onClick={() => handleReact(v.id, "dislike")}
                   />
                   <RailButton
+                    accentColor={creatorColor}
                     icon={<Zap className={cn("w-7 h-7", b && "fill-current text-yellow-400")} />}
                     label={c.boost}
                     onClick={() => handleBoost(v.id)}
                   />
                   <RailButton
+                    accentColor={creatorColor}
                     icon={<MessageCircle className="w-7 h-7" />}
                     label={commentCounts[v.id] ?? 0}
                     onClick={() => setCommentsTarget(v)}
                   />
                   <RailButton
+                    accentColor={creatorColor}
                     icon={<Eye className="w-6 h-6" />}
                     label={c.views}
                     onClick={() => {}}
                     small
                   />
                   <RailButton
+                    accentColor={creatorColor}
                     icon={<Flag className={cn("w-6 h-6", rep && "fill-current text-orange-400")} />}
                     label={`${c.reports}/${required}`}
                     onClick={() => openReport(v.id)}
@@ -419,6 +425,7 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
                   />
                   {canDelete(v) && (
                     <RailButton
+                      accentColor={creatorColor}
                       icon={<Trash2 className="w-6 h-6 text-red-400" />}
                       label=""
                       onClick={() => setDeleteTarget(v.id)}
