@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { UsernameDisplay } from "@/components/UsernameDisplay";
 import { refreshCustomStyles } from "@/hooks/useCustomStyles";
 import { refreshTierStyles, type SubTier } from "@/hooks/useTierStyles";
+import { cn } from "@/lib/utils";
 
 
 
