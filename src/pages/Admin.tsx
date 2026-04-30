@@ -82,8 +82,6 @@ const Admin = () => {
           </p>
         </div>
 
-        <TierColorEditor />
-
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -452,11 +450,11 @@ const UserEditor = ({
             </label>
             {tierOverride && (
               <Button size="sm" variant="ghost" onClick={() => setTierOverride(null)}>
-                <Trash2 className="w-4 h-4 mr-1" /> Use global
+                <Trash2 className="w-4 h-4 mr-1" /> Clear
               </Button>
             )}
             <span className="text-[11px] text-muted-foreground">
-              {tierOverride ? "Custom" : "Using global tier color"}
+              {tierOverride ? "Custom color" : "No color set"}
             </span>
           </div>
         )}
@@ -513,100 +511,5 @@ const UserEditor = ({
   );
 };
 
-// ---------- Global tier color editor ----------
-const TIER_META: Record<SubTier, { label: string; defaultColor: string }> = {
-  free:    { label: "Free",    defaultColor: "0 0% 50%" },
-  starter: { label: "Starter", defaultColor: "200 90% 55%" },
-  pro:     { label: "Pro",     defaultColor: "280 90% 60%" },
-  elite:   { label: "Elite",   defaultColor: "45 100% 55%" },
-};
-
-const TierColorEditor = () => {
-  const [colors, setColors] = useState<Record<SubTier, string>>({
-    free: TIER_META.free.defaultColor,
-    starter: TIER_META.starter.defaultColor,
-    pro: TIER_META.pro.defaultColor,
-    elite: TIER_META.elite.defaultColor,
-  });
-  const [loading, setLoading] = useState(true);
-  const [savingTier, setSavingTier] = useState<SubTier | null>(null);
-
-  useEffect(() => {
-    supabase
-      .from("tier_colors")
-      .select("tier, color")
-      .then(({ data }) => {
-        if (data) {
-          setColors((prev) => {
-            const next = { ...prev };
-            (data as any[]).forEach((r) => {
-              if (r?.tier && r?.color) next[r.tier as SubTier] = r.color;
-            });
-            return next;
-          });
-        }
-        setLoading(false);
-      });
-  }, []);
-
-  const update = async (t: SubTier, hex: string) => {
-    const triplet = hexToHslTriplet(hex);
-    setColors((c) => ({ ...c, [t]: triplet }));
-    setSavingTier(t);
-    const { error } = await supabase
-      .from("tier_colors")
-      .upsert({ tier: t, color: triplet, updated_at: new Date().toISOString() } as any);
-    setSavingTier(null);
-    if (error) {
-      toast("Couldn't save tier color", { description: error.message });
-      return;
-    }
-    refreshTierStyles();
-  };
-
-  return (
-    <div className="surface-elevated border border-border rounded-2xl p-4 flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <Palette className="w-4 h-4 text-accent" />
-        <h2 className="text-sm font-semibold">Global tier colors</h2>
-        {loading && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground ml-auto" />}
-      </div>
-      <p className="text-[11px] text-muted-foreground -mt-1">
-        Default border + glow color for each subscription tier. Per-user overrides take precedence.
-      </p>
-      <div className="grid grid-cols-2 gap-2">
-        {(["starter", "pro", "elite", "free"] as SubTier[]).map((t) => (
-          <div
-            key={t}
-            className="flex items-center gap-3 rounded-xl border border-border p-2.5"
-            style={{
-              background: `linear-gradient(135deg, hsl(${colors[t]} / 0.12), transparent 70%)`,
-            }}
-          >
-            <label
-              className="block w-9 h-9 rounded-full border-2 border-border cursor-pointer overflow-hidden shadow-sm"
-              style={{ background: `hsl(${colors[t]})` }}
-            >
-              <input
-                type="color"
-                value={hslTripletToHex(colors[t])}
-                onChange={(e) => update(t, e.target.value)}
-                className="opacity-0 w-full h-full cursor-pointer"
-              />
-            </label>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wider">
-                {TIER_META[t].label}
-              </p>
-              <p className="text-[10px] font-mono text-muted-foreground truncate">
-                {savingTier === t ? "saving…" : colors[t]}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 export default Admin;

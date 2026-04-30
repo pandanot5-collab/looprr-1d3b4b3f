@@ -494,10 +494,16 @@ const RailButton = ({
     onClick={onClick}
     className="flex flex-col items-center gap-1 active:scale-95 transition-transform"
   >
-    <span className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center hover:bg-black/60 transition-colors">
+    <span
+      className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center hover:bg-black/70 transition-colors ring-1 ring-white/40 border border-black/60"
+      style={{ boxShadow: "0 0 0 1px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.5)" }}
+    >
       {icon}
     </span>
-    <span className={cn("font-mono tabular-nums drop-shadow", small ? "text-[10px]" : "text-xs")}>
+    <span
+      className={cn("font-mono tabular-nums", small ? "text-[10px]" : "text-xs")}
+      style={{ textShadow: "0 0 3px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.7)" }}
+    >
       {label}
     </span>
   </button>
