@@ -26,6 +26,7 @@ import { TikTokEmbed } from "@/components/TikTokEmbed";
 import { Comments } from "@/components/Comments";
 import { checkAndMarkOnView } from "@/lib/video-health";
 import { incrementScrollCount } from "@/components/InstallPrompt";
+import { useTierStyles } from "@/hooks/useTierStyles";
 
 interface Props {
   videos: FeedVideo[];
