@@ -450,11 +450,11 @@ const UserEditor = ({
             </label>
             {tierOverride && (
               <Button size="sm" variant="ghost" onClick={() => setTierOverride(null)}>
-                <Trash2 className="w-4 h-4 mr-1" /> Use global
+                <Trash2 className="w-4 h-4 mr-1" /> Clear
               </Button>
             )}
             <span className="text-[11px] text-muted-foreground">
-              {tierOverride ? "Custom" : "Using global tier color"}
+              {tierOverride ? "Custom color" : "No color set"}
             </span>
           </div>
         )}
