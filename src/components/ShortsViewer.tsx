@@ -46,6 +46,7 @@ interface Counts {
 
 export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, inline = false }: Props) => {
   const { user, isAdmin } = useAuth();
+  const { getVideoColor } = useTierStyles();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(startIndex);
   const [videos, setVideos] = useState<FeedVideo[]>(initialVideos);
