@@ -9,6 +9,22 @@ const PROMPTED_KEY = "loopr.installPromptedAt";
 const SCROLL_THRESHOLD = 20;
 const COOLDOWN_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
+// Opens the site in a chrome-less popup window so non-PWA browsers
+// still get an "app-like" frame (no address bar, no tabs).
+const openStandaloneWindow = () => {
+  try {
+    const w = Math.min(440, window.screen.availWidth);
+    const h = Math.min(900, window.screen.availHeight);
+    const left = Math.max(0, (window.screen.availWidth - w) / 2);
+    const top = Math.max(0, (window.screen.availHeight - h) / 2);
+    window.open(
+      window.location.origin + "/",
+      "looprApp",
+      `popup=yes,width=${w},height=${h},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no`
+    );
+  } catch {}
+};
+
 export const incrementScrollCount = () => {
   try {
     const n = Number(localStorage.getItem(SCROLL_KEY) ?? "0") + 1;
@@ -27,10 +43,16 @@ export const InstallButton = ({ compact = false }: { compact?: boolean }) => {
 
   const onClick = async () => {
     if (canPrompt) {
-      await promptInstall();
+      const outcome = await promptInstall();
+      if (outcome === "accepted") return;
+      // user dismissed native prompt — fall through to standalone window fallback
+      openStandaloneWindow();
     } else if (ios) {
       setIosOpen(true);
     } else {
+      // Any other browser (desktop Firefox, in-app browsers, etc.):
+      // open the site in a chrome-less popup so it still "feels like an app".
+      openStandaloneWindow();
       setGenericOpen(true);
     }
   };
