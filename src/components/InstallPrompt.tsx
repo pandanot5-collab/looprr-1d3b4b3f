@@ -27,10 +27,16 @@ export const InstallButton = ({ compact = false }: { compact?: boolean }) => {
 
   const onClick = async () => {
     if (canPrompt) {
-      await promptInstall();
+      const res = await promptInstall();
+      if (res?.outcome === "accepted") return;
+      // user dismissed native prompt — fall through to standalone window fallback
+      openStandaloneWindow();
     } else if (ios) {
       setIosOpen(true);
     } else {
+      // Any other browser (desktop Firefox, in-app browsers, etc.):
+      // open the site in a chrome-less popup so it still "feels like an app".
+      openStandaloneWindow();
       setGenericOpen(true);
     }
   };
