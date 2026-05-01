@@ -27,8 +27,8 @@ export const InstallButton = ({ compact = false }: { compact?: boolean }) => {
 
   const onClick = async () => {
     if (canPrompt) {
-      const res = await promptInstall();
-      if (res?.outcome === "accepted") return;
+      const outcome = await promptInstall();
+      if (outcome === "accepted") return;
       // user dismissed native prompt — fall through to standalone window fallback
       openStandaloneWindow();
     } else if (ios) {
