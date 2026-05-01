@@ -18,14 +18,21 @@ export const incrementScrollCount = () => {
 };
 
 export const InstallButton = ({ compact = false }: { compact?: boolean }) => {
-  const { available, ios, promptInstall } = useInstallPrompt();
+  const { installed, canPrompt, ios, promptInstall } = useInstallPrompt();
   const [iosOpen, setIosOpen] = useState(false);
+  const [genericOpen, setGenericOpen] = useState(false);
 
-  if (!available) return null;
+  // Hide only once the app is actually installed/running standalone
+  if (installed) return null;
 
-  const onClick = () => {
-    if (ios) setIosOpen(true);
-    else promptInstall();
+  const onClick = async () => {
+    if (canPrompt) {
+      await promptInstall();
+    } else if (ios) {
+      setIosOpen(true);
+    } else {
+      setGenericOpen(true);
+    }
   };
 
   return (
@@ -43,9 +50,26 @@ export const InstallButton = ({ compact = false }: { compact?: boolean }) => {
         <span>Install</span>
       </button>
       <IosInstructions open={iosOpen} onOpenChange={setIosOpen} />
+      <GenericInstallInstructions open={genericOpen} onOpenChange={setGenericOpen} />
     </>
   );
 };
+
+const GenericInstallInstructions = ({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent className="max-w-sm">
+      <DialogHeader>
+        <DialogTitle>Install Loopr</DialogTitle>
+        <DialogDescription>
+          Open your browser menu and choose <strong>"Install app"</strong> or <strong>"Add to Home Screen"</strong> to install Loopr.
+        </DialogDescription>
+      </DialogHeader>
+      <p className="text-xs text-muted-foreground pt-1">
+        On Chrome / Edge: tap the ⋮ menu. On Safari: tap the Share button. If you don't see the option, your browser may not support installs — try Chrome or Safari.
+      </p>
+    </DialogContent>
+  </Dialog>
+);
 
 const IosInstructions = ({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
