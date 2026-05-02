@@ -105,7 +105,7 @@ export const VideoCard = ({ video, onMutate, onOpen }: { video: FeedVideo; onMut
       .insert({ video_id: video.id, user_id: user.id });
     if (error) {
       if (error.code === "23505") toast("You've already boosted a video today");
-      else toast("Could not boost", { description: error.message });
+      else (console.error("Could not boost", error), toast("Could not boost"))[1];
       return;
     }
     setBoosted(true);

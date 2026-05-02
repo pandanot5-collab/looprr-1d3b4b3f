@@ -79,7 +79,7 @@ const UserProfile = () => {
         .delete()
         .eq("follower_id", user.id)
         .eq("following_id", profile.id);
-      if (error) toast("Couldn't unfollow", { description: error.message });
+      if (error) (console.error("Couldn't unfollow", error), toast("Couldn't unfollow"))[1];
       else {
         setIsFollowing(false);
         setFollowers((c) => Math.max(0, c - 1));
@@ -88,7 +88,7 @@ const UserProfile = () => {
       const { error } = await supabase
         .from("follows")
         .insert({ follower_id: user.id, following_id: profile.id });
-      if (error) toast("Couldn't follow", { description: error.message });
+      if (error) (console.error("Couldn't follow", error), toast("Couldn't follow"))[1];
       else {
         setIsFollowing(true);
         setFollowers((c) => c + 1);

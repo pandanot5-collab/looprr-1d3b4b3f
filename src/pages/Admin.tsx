@@ -271,7 +271,7 @@ const UserEditor = ({
       .single();
     setBusy(false);
     if (error) {
-      toast("Couldn't save", { description: error.message });
+      (console.error("Couldn't save", error), toast("Couldn't save"))[1];
       return;
     }
     onChanged(data as any);
@@ -309,7 +309,7 @@ const UserEditor = ({
     const { error } = await supabase.rpc("admin_ban_user", { _user_id: profile.id });
     setBusy(false);
     if (error) {
-      toast("Couldn't ban", { description: error.message });
+      (console.error("Couldn't ban", error), toast("Couldn't ban"))[1];
       return;
     }
     onChanged({ ...profile, banned: true });
@@ -321,7 +321,7 @@ const UserEditor = ({
     const { error } = await supabase.rpc("admin_unban_user", { _user_id: profile.id });
     setBusy(false);
     if (error) {
-      toast("Couldn't unban", { description: error.message });
+      (console.error("Couldn't unban", error), toast("Couldn't unban"))[1];
       return;
     }
     onChanged({ ...profile, banned: false });

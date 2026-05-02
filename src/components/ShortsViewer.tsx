@@ -229,7 +229,7 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
     const { error } = await supabase.from("video_boosts").insert({ video_id: videoId, user_id: user.id });
     if (error) {
       if (error.code === "23505") toast("You've already boosted a video today");
-      else toast("Could not boost", { description: error.message });
+      else (console.error("Could not boost", error), toast("Could not boost"))[1];
       return;
     }
     setBoosted((b) => ({ ...b, [videoId]: true }));
@@ -255,7 +255,7 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
       .insert({ video_id: reportTarget, user_id: user.id, reason: reportReason.trim() || null });
     if (error) {
       if (error.code === "23505") toast("Already reported");
-      else toast("Could not report", { description: error.message });
+      else (console.error("Could not report", error), toast("Could not report"))[1];
       return;
     }
     setReported((r) => ({ ...r, [reportTarget]: true }));
@@ -283,7 +283,7 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
     const { error } = await supabase.from("videos").delete().eq("id", id);
     setDeleteTarget(null);
     if (error) {
-      toast("Couldn't delete", { description: error.message });
+      (console.error("Couldn't delete", error), toast("Couldn't delete"))[1];
       return;
     }
     setVideos((prev) => prev.filter((v) => v.id !== id));

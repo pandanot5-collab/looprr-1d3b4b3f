@@ -60,7 +60,7 @@ export const Comments = ({ videoId, videoOwnerId, categoryOwnerId }: Props) => {
       .insert({ video_id: videoId, user_id: user.id, body: text });
     setPosting(false);
     if (error) {
-      toast("Couldn't post", { description: error.message });
+      (console.error("Couldn't post", error), toast("Couldn't post"))[1];
       return;
     }
     setBody("");
@@ -79,7 +79,7 @@ export const Comments = ({ videoId, videoOwnerId, categoryOwnerId }: Props) => {
 
   const remove = async (id: string) => {
     const { error } = await supabase.from("video_comments").delete().eq("id", id);
-    if (error) toast("Couldn't delete", { description: error.message });
+    if (error) (console.error("Couldn't delete", error), toast("Couldn't delete"))[1];
     else setComments((cs) => cs.filter((c) => c.id !== id));
   };
 

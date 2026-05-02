@@ -103,7 +103,7 @@ const Category = () => {
       .update({ locked: !category.locked })
       .eq("id", category.id);
     setBusy(false);
-    if (error) toast("Couldn't update", { description: error.message });
+    if (error) (console.error("Couldn't update", error), toast("Couldn't update"))[1];
     else {
       setCategory({ ...category, locked: !category.locked });
       toast(category.locked ? "Category unlocked" : "Category locked");
@@ -129,7 +129,7 @@ const Category = () => {
     setBusy(false);
     if (error) {
       if (error.code === "23505") toast("Already a collaborator");
-      else toast("Couldn't add", { description: error.message });
+      else (console.error("Couldn't add", error), toast("Couldn't add"))[1];
       return;
     }
     setCollabUsername("");
@@ -139,7 +139,7 @@ const Category = () => {
 
   const removeCollaborator = async (id: string) => {
     const { error } = await supabase.from("category_collaborators").delete().eq("id", id);
-    if (error) toast("Couldn't remove", { description: error.message });
+    if (error) (console.error("Couldn't remove", error), toast("Couldn't remove"))[1];
     else loadCollaborators();
   };
 
