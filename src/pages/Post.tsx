@@ -118,7 +118,7 @@ const Post = () => {
     setSubmitting(false);
     if (error) {
       if (error.code === "23505") toast("That category already exists. Try another name.");
-      else toast("Could not create category", { description: error.message });
+      else (console.error("Could not create category", error), toast("Could not create category"))[1];
       return;
     }
     const newCat = data as CategoryOpt;
@@ -160,7 +160,7 @@ const Post = () => {
     });
     setSubmitting(false);
     if (error) {
-      toast("Could not post", { description: error.message });
+      (console.error("Could not post", error), toast("Could not post"))[1];
       return;
     }
     toast("Posted!");

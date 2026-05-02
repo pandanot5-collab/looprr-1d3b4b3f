@@ -66,7 +66,7 @@ const Auth = () => {
     });
     setLoading(false);
     if (error) {
-      toast("Could not send code", { description: error.message });
+      (console.error("Could not send code", error), toast("Could not send code"))[1];
       return;
     }
     setStep("code");
@@ -87,7 +87,7 @@ const Auth = () => {
     });
     setLoading(false);
     if (error) {
-      toast("Invalid or expired code", { description: error.message });
+      (console.error("Invalid or expired code", error), toast("Invalid or expired code"))[1];
       setCode("");
       return;
     }

@@ -36,9 +36,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    // state encodes the user id + a nonce, signed lightly via the service key
+    // Sign state with HMAC so the callback can verify it wasn't tampered with.
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const nonce = crypto.randomUUID();
-    const state = btoa(JSON.stringify({ uid: user.id, n: nonce, t: Date.now() }));
+    const payload = { uid: user.id, n: nonce, t: Date.now() };
+    const payloadB64 = btoa(JSON.stringify(payload));
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(serviceKey),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"],
+    );
+    const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payloadB64));
+    const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sigBuf)));
+    const state = `${payloadB64}.${sigB64}`;
 
     const redirectUri = `${supabaseUrl}/functions/v1/youtube-verify-callback`;
     const params = new URLSearchParams({
