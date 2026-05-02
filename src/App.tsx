@@ -13,6 +13,8 @@ import Post from "./pages/Post";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
 import Subscribe from "./pages/Subscribe";
+import Checkout from "./pages/Checkout";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
