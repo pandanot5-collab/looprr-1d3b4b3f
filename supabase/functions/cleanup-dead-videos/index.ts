@@ -40,9 +40,23 @@ async function isAlive(platform: string, url: string): Promise<boolean | null> {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  // Require either the service-role key (cron / internal) or a shared cleanup secret.
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const cleanupSecret = Deno.env.get("CLEANUP_SECRET");
+  const auth = req.headers.get("Authorization") ?? "";
+  const providedSecret = req.headers.get("x-cleanup-secret") ?? "";
+  const bearerOk = auth === `Bearer ${serviceKey}`;
+  const secretOk = !!cleanupSecret && providedSecret === cleanupSecret;
+  if (!bearerOk && !secretOk) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    serviceKey,
   );
 
   // Pull oldest 200 unchecked / least-recently-checked videos
