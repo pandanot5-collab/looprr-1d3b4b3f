@@ -71,9 +71,7 @@ const Subscribe = () => {
       navigate("/auth");
       return;
     }
-    toast(`${tier.name} is launching soon`, {
-      description: "We'll notify you the moment subscriptions go live.",
-    });
+    navigate(`/checkout/${tier.id}`);
   };
 
   return (
