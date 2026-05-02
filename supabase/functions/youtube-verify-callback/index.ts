@@ -38,7 +38,30 @@ Deno.serve(async (req) => {
 
     let stateData: { uid: string };
     try {
-      stateData = JSON.parse(atob(state));
+      const [payloadB64, sigB64] = state.split(".");
+      if (!payloadB64 || !sigB64) throw new Error("malformed");
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+      const key = await crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(serviceKey),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["verify"],
+      );
+      const sigBytes = Uint8Array.from(atob(sigB64), (c) => c.charCodeAt(0));
+      const ok = await crypto.subtle.verify(
+        "HMAC",
+        key,
+        sigBytes,
+        new TextEncoder().encode(payloadB64),
+      );
+      if (!ok) throw new Error("bad signature");
+      const parsed = JSON.parse(atob(payloadB64));
+      // Reject states older than 10 minutes
+      if (typeof parsed.t !== "number" || Date.now() - parsed.t > 10 * 60 * 1000) {
+        throw new Error("expired");
+      }
+      stateData = { uid: parsed.uid };
     } catch {
       return closeWith({ ok: false, error: "Invalid state" });
     }
