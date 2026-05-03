@@ -194,6 +194,12 @@ const Post = () => {
           <p className="text-muted-foreground text-sm">
             Drop a link from TikTok or YouTube Shorts.
           </p>
+          <button
+            onClick={() => navigate("/promote")}
+            className="mt-3 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-yellow-400/15 text-yellow-500 hover:bg-yellow-400/25 transition-colors font-semibold uppercase tracking-wider"
+          >
+            <Sparkles className="w-3 h-3" /> Promote as ad
+          </button>
         </div>
 
         {showCreate ? (
