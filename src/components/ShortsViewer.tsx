@@ -46,7 +46,7 @@ interface Counts {
   flagged: boolean;
 }
 
-export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, inline = false }: Props) => {
+export const ShortsViewer = ({ videos: initialVideos, ads = [], startIndex = 0, onClose, inline = false }: Props) => {
   const { user, isAdmin } = useAuth();
   const { getVideoColor } = useTierStyles();
   const containerRef = useRef<HTMLDivElement>(null);
