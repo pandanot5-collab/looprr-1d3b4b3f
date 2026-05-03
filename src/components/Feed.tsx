@@ -74,7 +74,7 @@ export const Feed = () => {
           No videos match this filter.
         </div>
       ) : (
-        <ShortsViewer videos={visible} inline />
+        <ShortsViewer videos={visible} ads={ads} inline />
       )}
     </div>
   );
