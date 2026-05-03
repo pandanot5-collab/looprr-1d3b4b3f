@@ -15,6 +15,7 @@ import UserProfile from "./pages/UserProfile";
 import Subscribe from "./pages/Subscribe";
 import Checkout from "./pages/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
+import Promote from "./pages/Promote";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/subscribe" element={<Subscribe />} />
               <Route path="/checkout/:tierId" element={<Checkout />} />
               <Route path="/checkout/:tierId/success" element={<CheckoutSuccess />} />
+              <Route path="/promote" element={<Promote />} />
               <Route path="/admin" element={<Admin />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

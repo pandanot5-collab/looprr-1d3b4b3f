@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_impressions: {
+        Row: {
+          ad_id: string
+          created_at: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_impressions_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ads: {
+        Row: {
+          active: boolean
+          ad_type: Database["public"]["Enums"]["ad_type"]
+          created_at: string
+          external_id: string | null
+          google_slot: string | null
+          id: string
+          impressions_served: number
+          paid_amount_cents: number
+          platform: string | null
+          posted_by: string
+          target_impressions: number
+          thumbnail_url: string | null
+          title: string | null
+          url: string | null
+        }
+        Insert: {
+          active?: boolean
+          ad_type?: Database["public"]["Enums"]["ad_type"]
+          created_at?: string
+          external_id?: string | null
+          google_slot?: string | null
+          id?: string
+          impressions_served?: number
+          paid_amount_cents?: number
+          platform?: string | null
+          posted_by: string
+          target_impressions?: number
+          thumbnail_url?: string | null
+          title?: string | null
+          url?: string | null
+        }
+        Update: {
+          active?: boolean
+          ad_type?: Database["public"]["Enums"]["ad_type"]
+          created_at?: string
+          external_id?: string | null
+          google_slot?: string | null
+          id?: string
+          impressions_served?: number
+          paid_amount_cents?: number
+          platform?: string | null
+          posted_by?: string
+          target_impressions?: number
+          thumbnail_url?: string | null
+          title?: string | null
+          url?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -216,6 +296,21 @@ export type Database = {
           color?: string
           tier?: Database["public"]["Enums"]["subscription_tier"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_heartbeats: {
+        Row: {
+          last_seen_at: string
+          user_id: string
+        }
+        Insert: {
+          last_seen_at?: string
+          user_id: string
+        }
+        Update: {
+          last_seen_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -464,6 +559,7 @@ export type Database = {
         Args: { _tier: Database["public"]["Enums"]["subscription_tier"] }
         Returns: number
       }
+      get_active_user_count: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -474,9 +570,12 @@ export type Database = {
       increment_video_view: { Args: { _video_id: string }; Returns: undefined }
       mark_video_alive: { Args: { _video_id: string }; Returns: undefined }
       mark_video_dead: { Args: { _video_id: string }; Returns: undefined }
+      record_ad_impression: { Args: { _ad_id: string }; Returns: undefined }
       required_reports_for: { Args: { _likes: number }; Returns: number }
+      upsert_heartbeat: { Args: never; Returns: undefined }
     }
     Enums: {
+      ad_type: "promoted_short" | "google"
       app_role: "admin" | "moderator" | "user"
       creator_platform: "youtube" | "tiktok"
       reaction_type: "like" | "dislike"
@@ -609,6 +708,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ad_type: ["promoted_short", "google"],
       app_role: ["admin", "moderator", "user"],
       creator_platform: ["youtube", "tiktok"],
       reaction_type: ["like", "dislike"],

@@ -27,9 +27,11 @@ import { Comments } from "@/components/Comments";
 import { checkAndMarkOnView } from "@/lib/video-health";
 import { incrementScrollCount } from "@/components/InstallPrompt";
 import { useTierStyles } from "@/hooks/useTierStyles";
+import { AdSlide, type AdItem } from "@/components/AdSlide";
 
 interface Props {
   videos: FeedVideo[];
+  ads?: AdItem[];
   startIndex?: number;
   onClose?: () => void;
   inline?: boolean;
@@ -44,7 +46,7 @@ interface Counts {
   flagged: boolean;
 }
 
-export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, inline = false }: Props) => {
+export const ShortsViewer = ({ videos: initialVideos, ads = [], startIndex = 0, onClose, inline = false }: Props) => {
   const { user, isAdmin } = useAuth();
   const { getVideoColor } = useTierStyles();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -307,13 +309,29 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
         ref={containerRef}
         className="h-full w-full overflow-y-auto snap-y snap-mandatory no-scrollbar"
       >
-        {videos.map((v, idx) => {
-          const c = counts[v.id];
+        {(() => {
+          // Interleave: insert one ad every ~30 videos (round-robin through ads)
+          const AD_INTERVAL = 30;
+          const items: Array<{ kind: "video"; data: FeedVideo } | { kind: "ad"; data: AdItem }> = [];
+          let adCursor = 0;
+          videos.forEach((v, i) => {
+            items.push({ kind: "video", data: v });
+            if (ads.length > 0 && (i + 1) % AD_INTERVAL === 0) {
+              items.push({ kind: "ad", data: ads[adCursor % ads.length] });
+              adCursor++;
+            }
+          });
+          return items.map((item, idx) => {
+            const isActive = idx === activeIndex;
+            if (item.kind === "ad") {
+              return <AdSlide key={`ad-${item.data.id}-${idx}`} ad={item.data} isActive={isActive} />;
+            }
+            const v = item.data;
+            const c = counts[v.id];
           const r = reactions[v.id] ?? null;
           const b = !!boosted[v.id];
           const rep = !!reported[v.id];
           const required = requiredReports(c.like);
-          const isActive = idx === activeIndex;
           const creatorColor = getVideoColor(v.posted_by);
           return (
             <section
@@ -436,7 +454,8 @@ export const ShortsViewer = ({ videos: initialVideos, startIndex = 0, onClose, i
               </div>
             </section>
           );
-        })}
+          });
+        })()}
       </div>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
