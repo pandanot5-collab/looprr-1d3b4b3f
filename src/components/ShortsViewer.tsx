@@ -454,7 +454,8 @@ export const ShortsViewer = ({ videos: initialVideos, ads = [], startIndex = 0, 
               </div>
             </section>
           );
-        })}
+          });
+        })()}
       </div>
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
