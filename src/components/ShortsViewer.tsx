@@ -309,7 +309,24 @@ export const ShortsViewer = ({ videos: initialVideos, ads = [], startIndex = 0, 
         ref={containerRef}
         className="h-full w-full overflow-y-auto snap-y snap-mandatory no-scrollbar"
       >
-        {videos.map((v, idx) => {
+        {(() => {
+          // Interleave: insert one ad every ~30 videos (round-robin through ads)
+          const AD_INTERVAL = 30;
+          const items: Array<{ kind: "video"; data: FeedVideo } | { kind: "ad"; data: AdItem }> = [];
+          let adCursor = 0;
+          videos.forEach((v, i) => {
+            items.push({ kind: "video", data: v });
+            if (ads.length > 0 && (i + 1) % AD_INTERVAL === 0) {
+              items.push({ kind: "ad", data: ads[adCursor % ads.length] });
+              adCursor++;
+            }
+          });
+          return items.map((item, idx) => {
+            const isActive = idx === activeIndex;
+            if (item.kind === "ad") {
+              return <AdSlide key={`ad-${item.data.id}-${idx}`} ad={item.data} isActive={isActive} />;
+            }
+            const v = item.data;
           const c = counts[v.id];
           const r = reactions[v.id] ?? null;
           const b = !!boosted[v.id];
