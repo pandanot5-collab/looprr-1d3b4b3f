@@ -6,12 +6,16 @@ import { Loader2 } from "lucide-react";
 import { PlatformFilter, type PlatformFilterValue } from "@/components/PlatformFilter";
 import type { AdItem } from "@/components/AdSlide";
 import { useHeartbeat } from "@/hooks/useHeartbeat";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Feed = () => {
   const [videos, setVideos] = useState<FeedVideo[]>([]);
   const [ads, setAds] = useState<AdItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<PlatformFilterValue>("all");
+  const { profile } = useAuth();
+  const isSubscriber =
+    !!profile && profile.subscription_tier && profile.subscription_tier !== "free";
   useHeartbeat();
 
   useEffect(() => {
@@ -74,7 +78,7 @@ export const Feed = () => {
           No videos match this filter.
         </div>
       ) : (
-        <ShortsViewer videos={visible} ads={ads} inline />
+        <ShortsViewer videos={visible} ads={isSubscriber ? [] : ads} inline />
       )}
     </div>
   );
