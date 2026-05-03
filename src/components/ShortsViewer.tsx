@@ -27,9 +27,11 @@ import { Comments } from "@/components/Comments";
 import { checkAndMarkOnView } from "@/lib/video-health";
 import { incrementScrollCount } from "@/components/InstallPrompt";
 import { useTierStyles } from "@/hooks/useTierStyles";
+import { AdSlide, type AdItem } from "@/components/AdSlide";
 
 interface Props {
   videos: FeedVideo[];
+  ads?: AdItem[];
   startIndex?: number;
   onClose?: () => void;
   inline?: boolean;
