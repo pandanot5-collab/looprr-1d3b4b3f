@@ -326,7 +326,8 @@ export const ShortsViewer = ({ videos: initialVideos, ads = [], startIndex = 0, 
             if (item.kind === "ad") {
               return <AdSlide key={`ad-${item.data.id}-${idx}`} ad={item.data} isActive={isActive} />;
             }
-          const c = counts[v.id];
+            const v = item.data;
+            const c = counts[v.id];
           const r = reactions[v.id] ?? null;
           const b = !!boosted[v.id];
           const rep = !!reported[v.id];
