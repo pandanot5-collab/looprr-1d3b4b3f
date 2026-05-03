@@ -15,6 +15,7 @@ import UserProfile from "./pages/UserProfile";
 import Subscribe from "./pages/Subscribe";
 import Checkout from "./pages/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
+import Promote from "./pages/Promote";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
