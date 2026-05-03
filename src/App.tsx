@@ -40,6 +40,7 @@ const App = () => (
               <Route path="/subscribe" element={<Subscribe />} />
               <Route path="/checkout/:tierId" element={<Checkout />} />
               <Route path="/checkout/:tierId/success" element={<CheckoutSuccess />} />
+              <Route path="/promote" element={<Promote />} />
               <Route path="/admin" element={<Admin />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
